@@ -1,4 +1,5 @@
 *.csv
+*.geojson
 .*
 !.gitignore
 *.geojson
