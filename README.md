@@ -6,6 +6,7 @@
 ## cosa fare
 - come ultima cosa, vedere il tipo di relazione (scatterplot o comunque diverso per vedere quanto incide il fumo su malattie apparato respiratorio rispetto all'inquinamento). CSV: malattie-croniche-prevalenza-malattie-del-sistema-respiratorio e mortalita-apparato-respiratorio
 -eventi meteo-inquinamento: da prendere 2 mesi (giugno e gennaio) e confrontare nel corso degli anni usando gli stessi mesi
+-andamento inquinante e confronto con range di valori permessi di quell'inquinante
 
 ### grafici per anno
 - grafico circolare ciclicità inquinamento (ok)
