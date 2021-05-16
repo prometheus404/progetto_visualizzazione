@@ -1,4 +1,6 @@
 *.csv
 **.geojson
 .*
+ignore*
+geckodriver.log
 !.gitignore
