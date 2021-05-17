@@ -1,4 +1,4 @@
-import dash
+import dash, json
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.express as px
@@ -9,6 +9,7 @@ from dash.dependencies import Input, Output
 app = dash.Dash(__name__)
 
 @app.callback(
+        Output(component_id='map_graph', component_property='figure'),
         Output(component_id='spyder_graph', component_property='figure'),
         Output(component_id='area_graph', component_property='figure'),
         Input(component_id='pollutant', component_property='value'),
@@ -16,6 +17,7 @@ app = dash.Dash(__name__)
         )
 def update(input1, input2):
     return ( 
+            map_graph(input1, input2),
             sg2(input1, input2),
             area_graph(input1, input2)
             )
@@ -144,6 +146,68 @@ def area_graph(pollutant, year, mode='mean'):
    
     return fig
 
+#################
+#   MAP GRAPH   #
+#################
+with open("../geojson/lombardia_province.geojson") as f:
+    province_geo=json.load(f)
+
+years = range(2005, 2018)
+
+ranges = {
+        'PM10' : [18, 55],
+        'NO2' : [14, 72],
+        'PM25' : [10, 58],
+        'CO_8h' : [0.2, 1.6],
+        'O3' : [12, 64],
+        'SO2' : [0, 12],
+        'C6H6' : [0.5, 4]
+        }
+
+pollutants = {
+        'PM10' : ['PM10', 'PM10 (SM2005)'],
+        'NO2' : ['Biossido di Azoto'],
+        'PM25' : ['Particelle sospese PM2.5'],
+        'CO_8h' : ['Monossido di Carbonio'],
+        'O3' : ['Ozono'],
+        'SO2' : ['Biossido di Zolfo'],
+        'C6H6' : ['Benzene']
+        }
+
+
+def map_graph(poll, year):
+    if year > 2017 :
+        return
+    pollutant = pollutants[poll]
+    pollutant_range = ranges[poll]
+    stations = pd.read_csv('../csv/lombardia/Stazioni_qualit__dell_aria(lombardia).csv', encoding='utf-8', sep=',')
+    chosen_year = pd.read_csv('../csv/lombardia/sensori_aria_'+str(year)+'/'+str(year)+'.csv', encoding='utf-8', sep=',')
+    #Remove broken values
+    chosen_year.drop(chosen_year.index[(chosen_year["Valore"] < 0)],axis=0,inplace=True)
+    #Remove unwanted pollutants
+    for index, row in stations.iterrows():
+        if row["NomeTipoSensore"] not in pollutant:
+            stations.drop(index, inplace=True)
+    result = pd.merge(stations,chosen_year,on='IdSensore')
+    #Calculate yearly mean by Province
+    df = result.groupby(by=['Provincia'])
+    df = df["Valore"].mean().reset_index()
+    #Generate map
+    fig = px.choropleth_mapbox(df, geojson=province_geo,
+                               locations='Provincia',
+                               featureidkey='properties.prov_acr',
+                               color='Valore',
+                               color_continuous_scale="YlOrRd",
+                               range_color=(pollutant_range[0], pollutant_range[1]),
+                               mapbox_style="carto-positron",
+                               zoom=7,
+                               center = {"lat": 45.67, "lon": 9.7119},
+                               opacity=0.5,
+                               labels={'Valore':pollutant[0]+': '+str(year)}
+                              )
+    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    return fig
+
 #############
 #   LAYOUT  #
 #############
@@ -176,16 +240,20 @@ app.layout = html.Div(children=[
         min=2014,
         max=2018,
         marks={i: str(i)  for i in range(2014, 2019)},
-        value=2018,
+        value=2017,
+    ),
+    dcc.Graph(
+        id='map_graph',
+        figure=map_graph('PM10', 2017)
     ),
     dcc.Graph(
         id='spyder_graph',
-        figure=sg('PM10', 2018)
-    ) , 
+        figure=sg('PM10', 2017)
+    ), 
     dcc.Graph(
         id='area_graph',
-        figure=area_graph('PM10', 2018)
-    ) 
+        figure=area_graph('PM10', 2017)
+    ), 
 ])
 
 if __name__ == '__main__':
