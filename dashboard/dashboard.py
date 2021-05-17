@@ -152,7 +152,7 @@ def area_graph(pollutant, year, mode='mean'):
 with open("../geojson/lombardia_province.geojson") as f:
     province_geo=json.load(f)
 
-years = range(2005, 2018)
+years = range(2005, 2019)
 
 ranges = {
         'PM10' : [18, 55],
@@ -176,7 +176,7 @@ pollutants = {
 
 
 def map_graph(poll, year):
-    if year > 2017 :
+    if year > 2018 :
         return
     pollutant = pollutants[poll]
     pollutant_range = ranges[poll]
