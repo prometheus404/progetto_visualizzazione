@@ -1,12 +1,17 @@
 import dash, json
 import dash_core_components as dcc
+import dash_bootstrap_components as dbc
 import dash_html_components as html
 import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
+from plotly.subplots import make_subplots
 from dash.dependencies import Input, Output
 
-app = dash.Dash(__name__)
+#slate theme (?)
+app = dash.Dash(
+        external_stylesheets=[dbc.themes.SANDSTONE]
+        )
 
 @app.callback(
         Output(component_id='map_graph', component_property='figure'),
@@ -63,6 +68,7 @@ def sg(pollutant, year):
 #########################
 #   SPYDER GRAPH 2.0    #
 #########################
+#TODO togliere legenda
 def sg2(pollutant, year):
     months = {
             '01': 'gen', 
@@ -120,6 +126,7 @@ max_pollutant = {
 
 #TODO togliere legenda, sfondo e anno dalle x, aggiungere trasparenza e titolo con anno
 #TODO in alternativa togliere il riempimento e mettere un secondo asse y e un istogramma basato su quell'asse
+#TODO grafico leggibile per SO2
 def area_graph(pollutant, year, mode='mean'):
     max_daily = max_pollutant[pollutant]
     ds =pd.read_csv('../csv/pollution_detection/qaria_'+str(year)+'.csv', sep=';')
@@ -133,17 +140,48 @@ def area_graph(pollutant, year, mode='mean'):
     year = ds.index[0][:4]
     maxY = [max_daily] * x.size             #max legal level
     warY = [max_daily+max_daily] *x.size    #warning level
-    posY = y.where(y>maxY, maxY)
-    negY = y.where(y<maxY, maxY)
+    posY = (y.where(y>maxY, maxY)) - maxY
+    negY = (y.where(y<maxY, maxY)) - maxY
     
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=x, y=maxY, line_color='white'))
-    fig.add_trace(go.Scatter(x=x, y=negY, fill='tonexty', fillcolor='green', mode='none'))
-    fig.add_trace(go.Scatter(x=x, y=maxY, line_color='white'))
-    fig.add_trace(go.Scatter(x=x, y=posY, fill='tonexty', fillcolor='red',mode='none'))
-    fig.add_trace(go.Scatter(x=x, y=y, line_color='black'))
+    fig = make_subplots(rows=1, cols=2, shared_yaxes=True)
+    #fig.add_trace(go.Scatter(x=x, y=maxY, line_color='white'))
+    fig.add_trace(go.Histogram(x=x,y=negY, marker_color='green',
+        yaxis= 'y2',
+        xbins=dict(
+            start=x.min(),
+            end=x.max(),
+            size='D1'
+            ),
+        histfunc='sum'),
+        row=1,
+        col=2
+        )
+    
+    fig.add_trace(go.Histogram(x=x,y=posY, marker_color='red',
+        yaxis= 'y2',
+        xbins=dict(
+            start=x.min(),
+            end=x.max(),
+            size='D1'
+            ),
+        histfunc='sum'),
+        row=1,
+        col=2)
 
-   
+    #fig.add_trace(go.Scatter(x=x, y=negY, fill='tonexty', fillcolor='green', mode='none'))
+    #fig.add_trace(go.Scatter(x=x, y=maxY, line_color='white'))
+    #fig.add_trace(go.Scatter(x=x, y=posY, fill='tonexty', fillcolor='red',mode='none'))
+    #fig.add_trace(go.Scatter(x=x, y=y, yaxis='y1',line_color='black', line_width=1), row=1,col=2)
+    fig.add_trace(go.Box(y=(y-maxY), yaxis='y1'),row=1, col=1)
+    fig.update_layout(
+            bargap=0,
+            yaxis = dict(
+                range =[1.5*negY.min(), 1.5*posY.max()],
+                title = 'micrograms/metric cube',
+                showline=True
+            ))
+
+
     return fig
 
 #################
@@ -212,48 +250,73 @@ def map_graph(poll, year):
 #   LAYOUT  #
 #############
 
-app.layout = html.Div(children=[
-    html.H1(children='Hello Dash'),
+sg_card = dbc.Card(
+        [
+            dcc.Graph(
+                id='spyder_graph',
+                figure=sg('PM10', 2017)
+            )
+        ])
 
-    html.Div(children='''
-        Dash: A web application framework for Python.
-    '''),
+area_card = dbc.Card(
+        [
+            dcc.Graph(
+                id='area_graph',
+                figure=area_graph('PM10', 2017)
+            )
+        ])
 
-    html.Label('Pollutant'),
-    dcc.Dropdown(
-        id='pollutant',
-        options=[
-            {'label': 'Pm 10', 'value': 'PM10'},
-            {'label': 'Pm 2.5', 'value': 'PM25'},
-            {'label': 'CO 8h mean', 'value': 'CO_8h'},
-            {'label': 'O3', 'value': 'O3'},
-            {'label': 'C6H6', 'value': 'C6H6'},
-            {'label': 'SO2', 'value': 'SO2'},
-            {'label': 'NO2', 'value': 'NO2'}
-        ],
-        value='PM10'
-    ),
+map_card = dbc.Card([
+                dcc.Graph(
+                    id='map_graph',
+                    figure=map_graph('PM10', 2017)
+                )
+            ])
 
-    html.Label('year'),
-    dcc.Slider(
-        id='year',
-        min=2014,
-        max=2018,
-        marks={i: str(i)  for i in range(2014, 2019)},
-        value=2017,
-    ),
-    dcc.Graph(
-        id='map_graph',
-        figure=map_graph('PM10', 2017)
-    ),
-    dcc.Graph(
-        id='spyder_graph',
-        figure=sg('PM10', 2017)
-    ), 
-    dcc.Graph(
-        id='area_graph',
-        figure=area_graph('PM10', 2017)
-    ), 
+controls =  dbc.Row([
+                dbc.Col(dcc.Dropdown(
+                        id='pollutant',
+                        options=[
+                                {'label': 'Pm 10', 'value': 'PM10'},
+                                {'label': 'Pm 2.5', 'value': 'PM25'},
+                                {'label': 'CO 8h mean', 'value': 'CO_8h'},
+                                {'label': 'O3', 'value': 'O3'},
+                                {'label': 'C6H6', 'value': 'C6H6'},
+                                {'label': 'SO2', 'value': 'SO2'},
+                                {'label': 'NO2', 'value': 'NO2'}
+                                ],
+                        value='PM10'
+                    ),
+                    md=4
+                ),
+
+                dbc.Col(
+                    dcc.Slider(
+                        id='year',
+                        min=2014,
+                        max=2018,
+                        marks={i: str(i)  for i in range(2014, 2019)},
+                        value=2017,
+                    ),
+                    md=8
+                )
+            ])
+
+
+app.layout = dbc.Container([
+    html.H1(children='Regional Pollution'),
+    controls,
+
+    
+    dbc.Row(
+        [
+            dbc.Col(map_card, md=8),
+            dbc.Col(sg_card, md=4)
+        ]),
+    
+    dbc.Row([
+            dbc.Col(area_card, md=8)
+        ])
 ])
 
 if __name__ == '__main__':
