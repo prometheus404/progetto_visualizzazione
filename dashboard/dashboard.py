@@ -85,7 +85,7 @@ def sg2(pollutant, year):
             '12': 'dec'}
     yearcolor = {}
     tot = pd.DataFrame(columns=['mese', 'stazione_id', 'valore', 'anno'])
-    for y in range(2014, 2019):
+    for y in range(2011, 2019):
         if y == year:
             yearcolor[y] = "red"
         else:
@@ -293,9 +293,9 @@ controls =  dbc.Row([
                 dbc.Col(
                     dcc.Slider(
                         id='year',
-                        min=2014,
-                        max=2018,
-                        marks={i: str(i)  for i in range(2014, 2019)},
+                        min=2011,
+                        max=2017,
+                        marks={i: str(i)  for i in range(2011, 2018)},
                         value=2017,
                     ),
                     md=8
