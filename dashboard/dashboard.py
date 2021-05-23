@@ -16,6 +16,7 @@ app = dash.Dash(
 @app.callback(
         Output(component_id='map_graph', component_property='figure'),
         Output(component_id='spyder_graph', component_property='figure'),
+        Output(component_id='doughnut_graph', component_property='figure'),
         Output(component_id='area_graph', component_property='figure'),
         Input(component_id='pollutant', component_property='value'),
         Input(component_id='year', component_property='value')
@@ -24,6 +25,7 @@ def update(input1, input2):
     return ( 
             map_graph(input1, input2),
             sg2(input1, input2),
+            doughnut_graph(input2),
             area_graph(input1, input2)
             )
 
@@ -108,6 +110,7 @@ def sg2(pollutant, year):
                         color='anno',
                         color_discrete_map=yearcolor,
                         line_close=True)
+    fig.update_layout(showlegend=False)
     return fig
 
     
@@ -174,6 +177,7 @@ def area_graph(pollutant, year, mode='mean'):
     #fig.add_trace(go.Scatter(x=x, y=y, yaxis='y1',line_color='black', line_width=1), row=1,col=2)
     fig.add_trace(go.Box(y=(y-maxY), yaxis='y1'),row=1, col=1)
     fig.update_layout(
+            showlegend=False,
             bargap=0,
             yaxis = dict(
                 range =[1.5*negY.min(), 1.5*posY.max()],
@@ -245,7 +249,36 @@ def map_graph(poll, year):
                               )
     fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
     return fig
+#################
+#   PIE CHART   #
+#################
+def doughnut_graph(anno):
+    benzene = pd.read_csv(f"../csv/lombardia/scatter/{str(anno)}/mean_{str(anno)}_Benzene_Precipitazione.csv", encoding='utf-8', sep=',')
+    biossido_azoto = pd.read_csv(f"../csv/lombardia/scatter/{str(anno)}/mean_{str(anno)}_Biossido di Azoto_Precipitazione.csv", encoding='utf-8', sep=',')
+    biossido_zolfo = pd.read_csv(f"../csv/lombardia/scatter/{str(anno)}/mean_{str(anno)}_Biossido di Zolfo_Precipitazione.csv", encoding='utf-8', sep=',')
+    monossido_carbonio = pd.read_csv(f"../csv/lombardia/scatter/{str(anno)}/mean_{str(anno)}_Biossido di Zolfo_Precipitazione.csv", encoding='utf-8', sep=',')
+    ozono = pd.read_csv(f"../csv/lombardia/scatter/{str(anno)}/mean_{str(anno)}_Ozono_Precipitazione.csv", encoding='utf-8', sep=',')
+    Pm25 = pd.read_csv(f"../csv/lombardia/scatter/{str(anno)}/mean_{str(anno)}_Particelle sospese PM2.5_Precipitazione.csv", encoding='utf-8', sep=',')
+    Pm10 = pd.read_csv(f"../csv/lombardia/scatter/{str(anno)}/mean_{str(anno)}_PM10_Precipitazione.csv", encoding='utf-8', sep=',')
 
+    #Media
+    lista_inquinanti=[benzene, biossido_azoto, biossido_zolfo, monossido_carbonio, ozono, Pm25, Pm10]
+    media_inquinanti=[]
+    valori_limite=[5,40,125,10,120,25,40]
+    contatore=0
+    for inq in lista_inquinanti:
+        media_inquinanti.append((inq['Valore inquinante'].mean()/valori_limite[contatore])*100)
+        contatore+=1
+    labels = ['C6H6','NO2','SO2','CO', 'O3', 'PM 2.5', 'PM 10']
+
+    # Use `hole` to create a donut-like pie chart
+    fig = go.Figure(data=[go.Pie(labels=labels, values=media_inquinanti, hole=.5)])
+
+    fig.update_layout(
+        #showlegend =False,
+        #title_text=f"Emissioni Lombardia {str(anno)}",
+        annotations=[dict(text=f'{str(anno)}', x=0.50, y=0.5, font_size=25, showarrow=False)])
+    return fig
 #############
 #   LAYOUT  #
 #############
@@ -272,6 +305,13 @@ map_card = dbc.Card([
                     figure=map_graph('PM10', 2017)
                 )
             ])
+
+doughnut_card = dbc.Card([
+                dcc.Graph(
+                    id='doughnut_graph',
+                    figure=doughnut_graph(2017)
+                    )
+                ])
 
 controls =  dbc.Row([
                 dbc.Col(dcc.Dropdown(
@@ -300,10 +340,10 @@ controls =  dbc.Row([
                     ),
                     md=8
                 )
-            ])
+            ], className='mb-4')
 
 
-app.layout = dbc.Container([
+app.layout = html.Div([
     html.H1(children='Regional Pollution'),
     controls,
 
@@ -312,9 +352,10 @@ app.layout = dbc.Container([
         [
             dbc.Col(map_card, md=8),
             dbc.Col(sg_card, md=4)
-        ]),
+        ], className='mb-4'),
     
     dbc.Row([
+            dbc.Col(doughnut_card, md=4),
             dbc.Col(area_card, md=8)
         ])
 ])
