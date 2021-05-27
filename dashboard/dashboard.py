@@ -5,6 +5,7 @@ import dash_html_components as html
 import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
+import numpy as np
 from plotly.subplots import make_subplots
 from dash.dependencies import Input, Output
 
@@ -146,41 +147,52 @@ def area_graph(pollutant, year, mode='mean'):
     posY = (y.where(y>maxY, maxY)) - maxY
     negY = (y.where(y<maxY, maxY)) - maxY
     
-    fig = make_subplots(rows=1, cols=2, shared_yaxes=True)
-    #fig.add_trace(go.Scatter(x=x, y=maxY, line_color='white'))
+    fig = go.Figure()
+    fig.update_layout(
+                xaxis = dict(domain=[0, 0.29], anchor='y'),
+                xaxis2 = dict(domain=[0.3, 1], anchor='y2'),
+                yaxis = dict(anchor='x2', domain=[0,1], side='right'),
+                yaxis2 = dict(anchor='x', domain=[0,1], overlaying='y',side='left')
+            )
+    fig.add_trace(go.Box(y=y, yaxis='y', xaxis='x'))
+    #fig.add_trace(go.Scatter(x=x, y=maxY, xaxis='x2', yaxis='y', line_color='black'))
     fig.add_trace(go.Histogram(x=x,y=negY, marker_color='green',
         yaxis= 'y2',
+        xaxis= 'x2',
         xbins=dict(
             start=x.min(),
             end=x.max(),
             size='D1'
             ),
-        histfunc='sum'),
-        row=1,
-        col=2
+        histfunc='sum')
         )
     
     fig.add_trace(go.Histogram(x=x,y=posY, marker_color='red',
         yaxis= 'y2',
+        xaxis= 'x2',
         xbins=dict(
             start=x.min(),
             end=x.max(),
             size='D1'
             ),
-        histfunc='sum'),
-        row=1,
-        col=2)
+        histfunc='sum')
+        )
 
     #fig.add_trace(go.Scatter(x=x, y=negY, fill='tonexty', fillcolor='green', mode='none'))
     #fig.add_trace(go.Scatter(x=x, y=maxY, line_color='white'))
     #fig.add_trace(go.Scatter(x=x, y=posY, fill='tonexty', fillcolor='red',mode='none'))
-    #fig.add_trace(go.Scatter(x=x, y=y, yaxis='y1',line_color='black', line_width=1), row=1,col=2)
-    fig.add_trace(go.Box(y=(y-maxY), yaxis='y1'),row=1, col=1)
+    fig.add_trace(go.Scatter(x=x, y=y, xaxis='x2',yaxis='y',line_color='black', line_width=1))
+
     fig.update_layout(
             showlegend=False,
             bargap=0,
+            yaxis2 = dict(
+                #range =[1.5*negY.min(), 1.5*posY.max()],
+                title = 'micrograms over limit',
+                showline=True
+            ),
             yaxis = dict(
-                range =[1.5*negY.min(), 1.5*posY.max()],
+                #range =[1.5*negY.min() + maxY, 1.5*posY.max()],
                 title = 'micrograms/metric cube',
                 showline=True
             ))
@@ -350,13 +362,13 @@ app.layout = html.Div([
     
     dbc.Row(
         [
-            dbc.Col(map_card, md=8),
+            dbc.Col(map_card, md=6),
             dbc.Col(sg_card, md=4)
         ], className='mb-4'),
     
     dbc.Row([
             dbc.Col(doughnut_card, md=4),
-            dbc.Col(area_card, md=8)
+            dbc.Col(area_card, md=6)
         ])
 ])
 
