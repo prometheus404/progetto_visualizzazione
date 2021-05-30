@@ -247,6 +247,41 @@ def map_graph(poll, year):
                               )
     fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
     return fig
+##########################
+#   WEATHER CONDITIONS   #
+##########################
+pollutants_list = {
+        'PM10' : ['PM10', 'PM10 (SM2005)'],
+        'NO2' : ['Biossido di Azoto'],
+        'PM25' : ['Particelle sospese PM2.5'],
+        'CO_8h' : ['Monossido di Carbonio'],
+        'O3' : ['Ozono'],
+        'SO2' : ['Biossido di zolfo'],
+        'C6H6' : ['Benzeene']
+        }
+
+
+def weather_pollutant(year, pollutant = [], weather_attribute = []):
+    csv = pd.read_csv('../csv/lombardia/scatter/'+str(year)+'/mean_'+str(year)+'_'+pollutant[0]+'_'+weather_attribute[0]+'.csv', encoding='utf-8', sep=',')
+    #Remove outliers
+    if weather_attribute[0]=='Precipitazione':
+        csv.drop(csv.index[(csv["Valore meteo"] > 0.4 )],axis=0,inplace=True)
+    #Plot
+    return px.scatter(csv, x='Valore meteo', y='Valore inquinante')
+    #csv.plot.scatter(x='Valore meteo', y='Valore inquinante')
+    #plt.xlabel('Weather attribute: '+weather_attribute[0])
+    #plt.ylabel('Pollutant: '+pollutant[0])
+    #plt.show()
+    #weather = np.array(csv['Valore meteo'])
+    #pollutant = np.array(csv['Valore inquinante'])
+    #Pearson
+    #print(scipy.stats.pearsonr(weather, pollutant))
+    #Spearman
+    #print(scipy.stats.spearmanr(weather, pollutant))
+    #Kendall
+    #print(scipy.stats.kendalltau(weather, pollutant))
+
+
 #################
 #   PIE CHART   #
 #################
@@ -310,8 +345,48 @@ doughnut_card = dbc.Card([
                     figure=doughnut_graph(2017)
                     )
                 ])
+weather_scatter_card = dbc.Card([
+                dcc.Graph(
+                    id='weather_graph',
+                    figure=weather_pollutant(2017, pollutants_list['PM10'], ['Precipitazione']))
+                ])
+weather_controls =   dbc.Row([
+                dbc.Col(
+                    dcc.Dropdown(
+                        id='pollutant',
+                        options=[
+                                {'label': 'Pm 10', 'value': 'PM10'},
+                                {'label': 'Pm 2.5', 'value': 'PM25'},
+                                {'label': 'CO 8h mean', 'value': 'CO_8h'},
+                                {'label': 'O3', 'value': 'O3'},
+                                {'label': 'C6H6', 'value': 'C6H6'},
+                                {'label': 'SO2', 'value': 'SO2'},
+                                {'label': 'NO2', 'value': 'NO2'}
+                                ],
+                        value='PM10'
+                    ),
+                    md=6
+                ),
 
-controls =  dbc.Row([
+                dbc.Col(
+                     dcc.Dropdown(
+                        id='weather',
+                        options=[
+                                {'label': 'Umidita', 'value': 'Umidità Relativa'},
+                                {'label': 'Direzione Vento', 'value': 'Direzione Vento'},
+                                {'label': 'Temperatura', 'value': 'Temperatura'},
+                                {'label': 'Velocita vento', 'value': 'Velocità Vento'},
+                                {'label': 'Neve', 'value': 'Altezza Neve'},
+                                {'label': 'Radiazione Globale', 'value': 'Radiazione Globale'},
+                                {'label': 'Precipitazioni', 'value': 'Precipitazione'}
+                                ],
+                        value='PM10'
+                    ),
+                    md=6
+                )
+            ], className='mb-4')
+
+specific_controls =  dbc.Row([
                 dbc.Col(dcc.Dropdown(
                         id='pollutant',
                         options=[
@@ -352,7 +427,7 @@ app.layout = html.Div([
 
 specific_tab = html.Div([
     html.H1(children='Regional Pollution'),
-    controls,
+    specific_controls,
 
     
     dbc.Row(
@@ -372,7 +447,8 @@ general_tab = html.Div([
     ])
 
 weather_tab = html.Div([
-    html.H3('weather_tab')
+    weather_controls,
+    weather_scatter_card
     ])
 
 #################
@@ -389,13 +465,20 @@ def render_content(tab):
         return weather_tab
 
 @app.callback(
+        Output('weather_graph', 'figure'),
+        Input('pollutant', 'value'),
+        Input('weather', 'value')
+        )
+def weather_update(pollutant, weather):
+    return weather_pollutant(2018, pollutants_list[pollutant], [weather])
+
+@app.callback(
         Output(component_id='map_graph', component_property='figure'),
         Output(component_id='spyder_graph', component_property='figure'),
         Output(component_id='doughnut_graph', component_property='figure'),
         Output(component_id='area_graph', component_property='figure'),
         Input(component_id='pollutant', component_property='value'),
         Input(component_id='year', component_property='value'),
-       
         )
 def update(input1, input2):
     return ( 
