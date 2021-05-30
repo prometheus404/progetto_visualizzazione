@@ -11,24 +11,10 @@ from dash.dependencies import Input, Output
 
 #slate theme (?)
 app = dash.Dash(
-        external_stylesheets=[dbc.themes.SANDSTONE]
+        external_stylesheets=[dbc.themes.SANDSTONE],
+        suppress_callback_exceptions=True
         )
 
-@app.callback(
-        Output(component_id='map_graph', component_property='figure'),
-        Output(component_id='spyder_graph', component_property='figure'),
-        Output(component_id='doughnut_graph', component_property='figure'),
-        Output(component_id='area_graph', component_property='figure'),
-        Input(component_id='pollutant', component_property='value'),
-        Input(component_id='year', component_property='value')
-        )
-def update(input1, input2):
-    return ( 
-            map_graph(input1, input2),
-            sg2(input1, input2),
-            doughnut_graph(input2),
-            area_graph(input1, input2)
-            )
 
 
 #################################
@@ -356,6 +342,15 @@ controls =  dbc.Row([
 
 
 app.layout = html.Div([
+    dcc.Tabs(id='main-tabs', value='tab-1', children=[
+        dcc.Tab(label='General Tab', value='tab-1'),
+        dcc.Tab(label='Specific Tab', value='tab-2'),
+        dcc.Tab(label='Weather Tab', value='tab-3'),
+        ]),
+    html.Div(id='tab-content')
+    ])
+
+specific_tab = html.Div([
     html.H1(children='Regional Pollution'),
     controls,
 
@@ -371,6 +366,45 @@ app.layout = html.Div([
             dbc.Col(area_card, md=6)
         ])
 ])
+
+general_tab = html.Div([
+    html.H3('general_tab')
+    ])
+
+weather_tab = html.Div([
+    html.H3('weather_tab')
+    ])
+
+#################
+#   CALLBACKS   #
+#################
+@app.callback(Output('tab-content', 'children'),
+              Input('main-tabs', 'value'))
+def render_content(tab):
+    if tab == 'tab-1':
+        return general_tab
+    elif tab == 'tab-2':
+        return specific_tab
+    elif tab == 'tab-3':
+        return weather_tab
+
+@app.callback(
+        Output(component_id='map_graph', component_property='figure'),
+        Output(component_id='spyder_graph', component_property='figure'),
+        Output(component_id='doughnut_graph', component_property='figure'),
+        Output(component_id='area_graph', component_property='figure'),
+        Input(component_id='pollutant', component_property='value'),
+        Input(component_id='year', component_property='value'),
+       
+        )
+def update(input1, input2):
+    return ( 
+            map_graph(input1, input2),
+            sg2(input1, input2),
+            doughnut_graph(input2),
+            area_graph(input1, input2)
+            )
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
