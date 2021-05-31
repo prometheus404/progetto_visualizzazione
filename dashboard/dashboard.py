@@ -320,7 +320,7 @@ sg_card = dbc.Card(
         [
             dcc.Graph(
                 id='spyder_graph',
-                figure=sg('PM10', 2017)
+                figure=sg2('PM10', 2017)
             )
         ])
 
@@ -380,7 +380,7 @@ weather_controls =   dbc.Row([
                                 {'label': 'Radiazione Globale', 'value': 'Radiazione Globale'},
                                 {'label': 'Precipitazioni', 'value': 'Precipitazione'}
                                 ],
-                        value='PM10'
+                        value='Velocità Vento'
                     ),
                     md=6
                 )
