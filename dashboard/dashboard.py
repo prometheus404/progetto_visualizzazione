@@ -130,6 +130,7 @@ def area_graph(pollutant, year, mode='mean'):
     year = ds.index[0][:4]
     maxY = [max_daily] * x.size             #max legal level
     warY = [max_daily+max_daily] *x.size    #warning level
+    cleanY = [-max_daily*0.5]*x.size              #clean level
     posY = (y.where(y>maxY, maxY)) - maxY
     negY = (y.where(y<maxY, maxY)) - maxY
     
@@ -168,6 +169,10 @@ def area_graph(pollutant, year, mode='mean'):
     #fig.add_trace(go.Scatter(x=x, y=maxY, line_color='white'))
     #fig.add_trace(go.Scatter(x=x, y=posY, fill='tonexty', fillcolor='red',mode='none'))
     fig.add_trace(go.Scatter(x=x, y=y, xaxis='x2',yaxis='y',line_color='black', line_width=1))
+    fig.add_trace(go.Scatter(x=x, y=maxY, xaxis='x2',yaxis='y',line_color='black', line_width=3))
+    fig.add_trace(go.Scatter(x=x, y=warY, xaxis='x2',yaxis='y',line_color='purple', line_width=1))
+    fig.add_trace(go.Scatter(x=x, y=maxY, xaxis='x2',yaxis='y2',line_color='purple', line_width=1))
+    fig.add_trace(go.Scatter(x=x, y=cleanY, xaxis='x2',yaxis='y2',line_color='blue', line_width=1))
 
     fig.update_layout(
             showlegend=False,
