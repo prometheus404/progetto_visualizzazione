@@ -320,7 +320,7 @@ sg_card = dbc.Card(
         [
             dcc.Graph(
                 id='spyder_graph',
-                figure=sg('PM10', 2017)
+                figure=sg2('PM10', 2017)
             )
         ])
 
