@@ -218,9 +218,18 @@ pollutants = {
         'SO2' : ['Biossido di Zolfo'],
         'C6H6' : ['Benzene']
         }
+prov_lookup = {feature['properties']['prov_acr']: feature for feature in province_geo['features']}
 
+def highlight(provincia):
+    geojson_highlights = dict()
+    for k in province_geo.keys():
+        if k != 'features':
+            geojson_highlights[k] = province_geo[k]
+        else:
+            geojson_highlights[k] = [prov_lookup[provincia]]
+    return geojson_highlights
 
-def map_graph(poll, year):
+def map_graph(poll, year, provincia):
     if year > 2018 :
         return
     pollutant = pollutants[poll]
@@ -250,6 +259,14 @@ def map_graph(poll, year):
                                opacity=0.5,
                                labels={'Valore':pollutant[0]+': '+str(year)}
                               )
+    highlights = highlight(provincia)
+    fig.add_trace(
+        px.choropleth_mapbox(df, geojson=highlights, 
+                             color="Valore",
+                             locations="Provincia", 
+                             featureidkey="properties.prov_acr",
+                             opacity=1).data[0]
+    )
     fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
     return fig
 ##########################
@@ -340,7 +357,7 @@ area_card = dbc.Card(
 map_card = dbc.Card([
                 dcc.Graph(
                     id='map_graph',
-                    figure=map_graph('PM10', 2017)
+                    figure=map_graph('PM10', 2017, 'MI')
                 )
             ])
 
@@ -484,13 +501,18 @@ def weather_update(pollutant, weather):
         Output(component_id='area_graph', component_property='figure'),
         Input(component_id='pollutant', component_property='value'),
         Input(component_id='year', component_property='value'),
+        Input(component_id='map_graph', component_property='clickData'),
         )
-def update(input1, input2):
+def update(pollutant, year, click):
+    provincia = 'MI'
+    if click is not None:
+        provincia = click['points'][0]['location']
+    print(provincia)
     return ( 
-            map_graph(input1, input2),
-            sg2(input1, input2),
-            doughnut_graph(input2),
-            area_graph(input1, input2)
+            map_graph(pollutant, year, provincia),
+            sg2(pollutant, year),
+            doughnut_graph(year),
+            area_graph(pollutant, year)
             )
 
 
