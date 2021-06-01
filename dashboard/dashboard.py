@@ -5,8 +5,6 @@ import dash_html_components as html
 import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
-import numpy as np
-from plotly.subplots import make_subplots
 from dash.dependencies import Input, Output
 
 #slate theme (?)
@@ -15,49 +13,9 @@ app = dash.Dash(
         suppress_callback_exceptions=True
         )
 
-
-
-#################################
-#   CANCER POLLUTION RELATION   #
-#################################
-
-def cps(input1, input2):
-    print(input1 + ' ' + str(input2))
-    inqui = pd.read_csv('../csv/tumori.csv', encoding='utf-8', sep=',')
-    inqui_s = inqui.sort_values(by=["Pm10"], ascending=True)
-    return px.scatter(inqui_s, x='Value', y='Pm10')
-
-
-#############################
-#   POLLUTION SPYDER GRAPH  #
-#############################
-def dataset_to_monthly_mean(filename, pollutant):
-    #importa il dataset
-    dataset = pd.read_csv(filename, sep=';')
-    #prende solo la sostanza scelta
-    no2 = dataset[dataset['inquinante']==pollutant]
-    #toglie i valori nulli
-    no2 = no2[no2['valore'] >= 0]
-    no2.data = no2.data.map(lambda x: x[5:-3])
-    # restituisce la
-    return no2.groupby(by='data', as_index=False).mean('valore')
-
-#TODO chiudere la linea
-def sg(pollutant, year):
-    fig = go.Figure()
-    for y in range(2014, 2019):
-        if y == year:
-            col = "red"
-        else:
-            col = "gray"
-        no2 = dataset_to_monthly_mean('../csv/pollution_detection/qaria_'+str(y)+'.csv', pollutant)
-        fig.add_trace(go.Scatterpolar(r=no2['valore'], theta=no2['data'],mode = 'lines', name=y, line_color=col))
-    return fig
-
-#########################
-#   SPYDER GRAPH 2.0    #
-#########################
-#TODO togliere legenda
+####################
+#   SPYDER GRAPH   #
+####################
 def sg2(pollutant, year):
     months = {
             '01': 'gen', 
@@ -84,13 +42,9 @@ def sg2(pollutant, year):
         pdf = pdf[pdf['valore'] >= 0]
         pdf = pdf.assign(mese = lambda x: x.data)
         pdf.mese = pdf.mese.map(lambda x: x[5:-3])
-        print(pdf)
         pdf = pdf.groupby(by='mese', as_index=False).mean()
         pdf = pdf.assign(anno = lambda x: y)
-        print(pdf)
         tot = tot.append(pdf, ignore_index=True)
-    print(tot)
-        #print(pdf)
     fig = px.line_polar(tot,
                         r='valore',
                         theta='mese',
@@ -114,7 +68,7 @@ max_pollutant = {
         'C6H6': 5
         }
 
-#TODO togliere legenda, sfondo e anno dalle x, aggiungere trasparenza e titolo con anno
+#TODO togliere sfondo e anno dalle x, aggiungere trasparenza e titolo con anno
 #TODO in alternativa togliere il riempimento e mettere un secondo asse y e un istogramma basato su quell'asse
 #TODO grafico leggibile per SO2
 def area_graph(pollutant, year, mode='mean'):
@@ -125,9 +79,8 @@ def area_graph(pollutant, year, mode='mean'):
         ds = ds.groupby(by='data').max()
     if mode == 'mean':
         ds = ds.groupby(by='data').mean()
-    x = ds.index#.map(lambda i: i[-5:])
+    x = ds.index
     y = ds['valore']
-    year = ds.index[0][:4]
     maxY = [max_daily] * x.size             #max legal level
     warY = [max_daily+max_daily] *x.size    #warning level
     cleanY = [-max_daily*0.5]*x.size              #clean level
@@ -142,7 +95,6 @@ def area_graph(pollutant, year, mode='mean'):
                 yaxis2 = dict(anchor='x', domain=[0,1], overlaying='y',side='left')
             )
     fig.add_trace(go.Box(y=y, yaxis='y', xaxis='x'))
-    #fig.add_trace(go.Scatter(x=x, y=maxY, xaxis='x2', yaxis='y', line_color='black'))
     fig.add_trace(go.Histogram(x=x,y=negY, marker_color='green',
         yaxis= 'y2',
         xaxis= 'x2',
@@ -165,9 +117,6 @@ def area_graph(pollutant, year, mode='mean'):
         histfunc='sum')
         )
 
-    #fig.add_trace(go.Scatter(x=x, y=negY, fill='tonexty', fillcolor='green', mode='none'))
-    #fig.add_trace(go.Scatter(x=x, y=maxY, line_color='white'))
-    #fig.add_trace(go.Scatter(x=x, y=posY, fill='tonexty', fillcolor='red',mode='none'))
     fig.add_trace(go.Scatter(x=x, y=y, xaxis='x2',yaxis='y',line_color='black', line_width=1))
     fig.add_trace(go.Scatter(x=x, y=maxY, xaxis='x2',yaxis='y',line_color='black', line_width=3))
     fig.add_trace(go.Scatter(x=x, y=warY, xaxis='x2',yaxis='y',line_color='purple', line_width=1))
@@ -178,12 +127,10 @@ def area_graph(pollutant, year, mode='mean'):
             showlegend=False,
             bargap=0,
             yaxis2 = dict(
-                #range =[1.5*negY.min(), 1.5*posY.max()],
                 title = 'micrograms over limit',
                 showline=True
             ),
             yaxis = dict(
-                #range =[1.5*negY.min() + maxY, 1.5*posY.max()],
                 title = 'micrograms/metric cube',
                 showline=True
             ))
@@ -220,55 +167,55 @@ pollutants = {
         }
 prov_lookup = {feature['properties']['prov_acr']: feature for feature in province_geo['features']}
 
-def highlight(provincia):
+def highlight(province):
     geojson_highlights = dict()
     for k in province_geo.keys():
         if k != 'features':
             geojson_highlights[k] = province_geo[k]
         else:
-            geojson_highlights[k] = [prov_lookup[provincia]]
+            geojson_highlights[k] = [prov_lookup[province]]
     return geojson_highlights
 
-def map_graph(poll, year, provincia):
+def map_graph(poll, year, province):
     if year > 2018 :
         return
     pollutant = pollutants[poll]
     pollutant_range = ranges[poll]
-    stations = pd.read_csv('../csv/lombardia/Stazioni_qualit__dell_aria(lombardia).csv', encoding='utf-8', sep=',')
-    chosen_year = pd.read_csv('../csv/lombardia/sensori_aria_'+str(year)+'/'+str(year)+'.csv', encoding='utf-8', sep=',')
-    #Remove broken values
-    chosen_year.drop(chosen_year.index[(chosen_year["Valore"] < 0)],axis=0,inplace=True)
+    chosen_year = pd.read_csv(f"../csv/lombardia/air_quality/{str(year)}.csv", encoding='utf-8', sep=',')
     #Remove unwanted pollutants
-    for index, row in stations.iterrows():
-        if row["NomeTipoSensore"] not in pollutant:
-            stations.drop(index, inplace=True)
-    result = pd.merge(stations,chosen_year,on='IdSensore')
+    df = chosen_year[chosen_year['NomeTipoSensore'].isin(pollutant)]
     #Calculate yearly mean by Province
-    df = result.groupby(by=['Provincia'])
+    df = df.groupby(by=['Provincia'])
     df = df["Valore"].mean().reset_index()
     #Generate map
-    fig = px.choropleth_mapbox(df, geojson=province_geo,
-                               locations='Provincia',
-                               featureidkey='properties.prov_acr',
-                               color='Valore',
-                               color_continuous_scale="YlOrRd",
-                               range_color=(pollutant_range[0], pollutant_range[1]),
-                               mapbox_style="carto-positron",
-                               zoom=7,
-                               center = {"lat": 45.67, "lon": 9.7119},
-                               opacity=0.5,
-                               labels={'Valore':pollutant[0]+': '+str(year)}
-                              )
-    highlights = highlight(provincia)
+    fig = px.choropleth_mapbox(
+        df,
+        geojson=province_geo,
+        locations='Provincia',
+        featureidkey='properties.prov_acr',
+        color='Valore',
+        color_continuous_scale="YlOrRd",
+        range_color=(pollutant_range[0], pollutant_range[1]),
+        mapbox_style="carto-positron",
+        zoom=7,
+        center = {"lat": 45.67, "lon": 9.7119},
+        opacity=0.5,
+        labels={'Valore': poll + ' in ' + str(year)}
+    )
+    highlights = highlight(province)
     fig.add_trace(
-        px.choropleth_mapbox(df, geojson=highlights, 
-                             color="Valore",
-                             locations="Provincia", 
-                             featureidkey="properties.prov_acr",
-                             opacity=1).data[0]
+        px.choropleth_mapbox(
+            df,
+            geojson=highlights,
+            color="Valore",
+            locations="Provincia",
+            featureidkey="properties.prov_acr",
+            opacity=1,
+        ).data[0]
     )
     fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
     return fig
+
 ##########################
 #   WEATHER CONDITIONS   #
 ##########################
@@ -278,8 +225,8 @@ pollutants_list = {
         'PM25' : ['Particelle sospese PM2.5'],
         'CO_8h' : ['Monossido di Carbonio'],
         'O3' : ['Ozono'],
-        'SO2' : ['Biossido di zolfo'],
-        'C6H6' : ['Benzeene']
+        'SO2' : ['Biossido di Zolfo'],
+        'C6H6' : ['Benzene']
         }
 
 
@@ -290,10 +237,6 @@ def weather_pollutant(year, pollutant = [], weather_attribute = []):
         csv.drop(csv.index[(csv["Valore meteo"] > 0.4 )],axis=0,inplace=True)
     #Plot
     return px.scatter(csv, x='Valore meteo', y='Valore inquinante')
-    #csv.plot.scatter(x='Valore meteo', y='Valore inquinante')
-    #plt.xlabel('Weather attribute: '+weather_attribute[0])
-    #plt.ylabel('Pollutant: '+pollutant[0])
-    #plt.show()
     #weather = np.array(csv['Valore meteo'])
     #pollutant = np.array(csv['Valore inquinante'])
     #Pearson
@@ -307,33 +250,40 @@ def weather_pollutant(year, pollutant = [], weather_attribute = []):
 #################
 #   PIE CHART   #
 #################
-def doughnut_graph(anno):
-    benzene = pd.read_csv(f"../csv/lombardia/scatter/{str(anno)}/mean_{str(anno)}_Benzene_Precipitazione.csv", encoding='utf-8', sep=',')
-    biossido_azoto = pd.read_csv(f"../csv/lombardia/scatter/{str(anno)}/mean_{str(anno)}_Biossido di Azoto_Precipitazione.csv", encoding='utf-8', sep=',')
-    biossido_zolfo = pd.read_csv(f"../csv/lombardia/scatter/{str(anno)}/mean_{str(anno)}_Biossido di Zolfo_Precipitazione.csv", encoding='utf-8', sep=',')
-    monossido_carbonio = pd.read_csv(f"../csv/lombardia/scatter/{str(anno)}/mean_{str(anno)}_Biossido di Zolfo_Precipitazione.csv", encoding='utf-8', sep=',')
-    ozono = pd.read_csv(f"../csv/lombardia/scatter/{str(anno)}/mean_{str(anno)}_Ozono_Precipitazione.csv", encoding='utf-8', sep=',')
-    Pm25 = pd.read_csv(f"../csv/lombardia/scatter/{str(anno)}/mean_{str(anno)}_Particelle sospese PM2.5_Precipitazione.csv", encoding='utf-8', sep=',')
-    Pm10 = pd.read_csv(f"../csv/lombardia/scatter/{str(anno)}/mean_{str(anno)}_PM10_Precipitazione.csv", encoding='utf-8', sep=',')
-
-    #Media
-    lista_inquinanti=[benzene, biossido_azoto, biossido_zolfo, monossido_carbonio, ozono, Pm25, Pm10]
-    media_inquinanti=[]
-    valori_limite=[5,40,125,10,120,25,40]
-    contatore=0
-    for inq in lista_inquinanti:
-        media_inquinanti.append((inq['Valore inquinante'].mean()/valori_limite[contatore])*100)
-        contatore+=1
-    labels = ['C6H6','NO2','SO2','CO', 'O3', 'PM 2.5', 'PM 10']
-
-    # Use `hole` to create a donut-like pie chart
-    fig = go.Figure(data=[go.Pie(labels=labels, values=media_inquinanti, hole=.5)])
-
+def doughnut_graph(poll, year):
+    # Selected pollutant
+    chosen_year = pd.read_csv(f"../csv/lombardia/air_quality/{str(year)}.csv", encoding='utf-8', sep=',')
+    # Remove broken values
+    polls = [item for sublist in pollutants_list.values() for item in sublist]
+    # Remove unwanted pollutants
+    df = chosen_year[chosen_year['NomeTipoSensore'].isin(polls)]
+    df = df.groupby(by=['NomeTipoSensore'])
+    df = df["Valore"].mean().reset_index()
+    # Calculate average
+    poll_average = []
+    limit_value = [5, 40, 125, 10, 120, 40, 25]
+    counter = 0
+    for index, row in df.iterrows():
+        poll_average.append((row['Valore'] / limit_value[counter]) * 100)
+        counter += 1
+    # Donut chart
+    labels = ['Benzene [C6H6]', 'Biossido di Azoto [NO2]', 'Biossido di Zolfo [SO2]', 'Monossido di Carbonio [CO_8h]',
+              'Ozono [O3]', 'PM 10', 'PM 2.5']
+    ordered_poll = ['C6H6', 'NO2', 'SO2', 'CO_8h', 'O3', 'PM10', 'PM25']
+    pull = [0, 0, 0, 0, 0, 0, 0]
+    c = 0
+    for i in ordered_poll:
+        if i == poll:
+            pull[c] = 0.15
+        c += 1
+    fig = go.Figure(data=[go.Pie(labels=labels, values=poll_average, hole=.4, pull=pull)])
+    # pull argument for exploding
     fig.update_layout(
-        #showlegend =False,
-        #title_text=f"Emissioni Lombardia {str(anno)}",
-        annotations=[dict(text=f'{str(anno)}', x=0.50, y=0.5, font_size=25, showarrow=False)])
+        title_text=f"Emissioni Lombardia {str(year)}",
+        annotations=[dict(text=f'{str(year)}', x=0.50, y=0.5, font_size=30, showarrow=False)])
     return fig
+
+
 #############
 #   LAYOUT  #
 #############
@@ -364,7 +314,7 @@ map_card = dbc.Card([
 doughnut_card = dbc.Card([
                 dcc.Graph(
                     id='doughnut_graph',
-                    figure=doughnut_graph(2017)
+                    figure=doughnut_graph('PM10', 2017)
                     )
                 ])
 weather_scatter_card = dbc.Card([
@@ -394,13 +344,12 @@ weather_controls =   dbc.Row([
                      dcc.Dropdown(
                         id='weather',
                         options=[
-                                {'label': 'Umidita', 'value': 'Umidità Relativa'},
-                                {'label': 'Direzione Vento', 'value': 'Direzione Vento'},
-                                {'label': 'Temperatura', 'value': 'Temperatura'},
-                                {'label': 'Velocita vento', 'value': 'Velocità Vento'},
-                                {'label': 'Neve', 'value': 'Altezza Neve'},
-                                {'label': 'Radiazione Globale', 'value': 'Radiazione Globale'},
-                                {'label': 'Precipitazioni', 'value': 'Precipitazione'}
+                                {'label': 'Humidity', 'value': 'Umidità Relativa'},
+                                {'label': 'Temperature', 'value': 'Temperatura'},
+                                {'label': 'Wind speed', 'value': 'Velocità Vento'},
+                                {'label': 'Snow', 'value': 'Altezza Neve'},
+                                {'label': 'Global radiation', 'value': 'Radiazione Globale'},
+                                {'label': 'Precipitation', 'value': 'Precipitazione'}
                                 ],
                         value='Velocità Vento'
                     ),
@@ -448,7 +397,6 @@ app.layout = html.Div([
     ])
 
 specific_tab = html.Div([
-    html.H1(children='Regional Pollution'),
     specific_controls,
 
     
@@ -508,11 +456,11 @@ def update(pollutant, year, click):
     if click is not None:
         provincia = click['points'][0]['location']
     print(provincia)
-    return ( 
-            map_graph(pollutant, year, provincia),
-            sg2(pollutant, year),
-            doughnut_graph(year),
-            area_graph(pollutant, year)
+    return (
+        map_graph(pollutant, year, provincia),
+        sg2(pollutant, year),
+        doughnut_graph(pollutant, year),
+        area_graph(pollutant, year)
             )
 
 
