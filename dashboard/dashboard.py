@@ -13,10 +13,57 @@ app = dash.Dash(
         suppress_callback_exceptions=True
         )
 
+dataframes = {
+    2006 : pd.read_csv('../csv/lombardia/air_quality/2006.csv', sep=','),
+    2007 : pd.read_csv('../csv/lombardia/air_quality/2007.csv', sep=','),
+    2008 : pd.read_csv('../csv/lombardia/air_quality/2008.csv', sep=','),
+    2009 : pd.read_csv('../csv/lombardia/air_quality/2009.csv', sep=','),
+    2010 : pd.read_csv('../csv/lombardia/air_quality/2010.csv', sep=','),
+    2011 : pd.read_csv('../csv/lombardia/air_quality/2011.csv', sep=','),
+    2012 : pd.read_csv('../csv/lombardia/air_quality/2012.csv', sep=','),
+    2013 : pd.read_csv('../csv/lombardia/air_quality/2013.csv', sep=','),
+    2014 : pd.read_csv('../csv/lombardia/air_quality/2014.csv', sep=','),
+    2015 : pd.read_csv('../csv/lombardia/air_quality/2015.csv', sep=','),
+    2016 : pd.read_csv('../csv/lombardia/air_quality/2016.csv', sep=','),
+    2017 : pd.read_csv('../csv/lombardia/air_quality/2017.csv', sep=','),
+    2018 : pd.read_csv('../csv/lombardia/air_quality/2018.csv', sep=',')
+}
+
+pollutants = {
+    'PM10' : 'PM10 (SM2005)',
+    'NO2' : 'Biossido di Azoto',
+    'PM25' : 'Particelle sospese PM2.5',
+    'CO_8h' : 'Monossido di Carbonio',
+    'O3' : 'Ozono',
+    'SO2' : 'Biossido di Zolfo',
+    'C6H6' : 'Benzene'
+}
+
+max_pollutant = {
+    'NO2': 200,
+    'PM10': 50,
+    'PM25': 25,
+    'O3': 120,
+    'CO_8h': 10,
+    'SO2' : 125,
+    'C6H6': 5
+}
+
+ranges = {
+    'PM10' : [18, 55],
+    'NO2' : [14, 72],
+    'PM25' : [10, 58],
+    'CO_8h' : [0.2, 1.6],
+    'O3' : [12, 64],
+    'SO2' : [0, 12],
+    'C6H6' : [0.5, 4]
+}
+
 ####################
 #   SPYDER GRAPH   #
 ####################
-def sg2(pollutant, year):
+#TODO Modificare le label con le stringhe dei mesi
+def sg2(pollutant, year, province):
     months = {
             '01': 'gen', 
             '02': 'feb', 
@@ -31,69 +78,58 @@ def sg2(pollutant, year):
             '11': 'nov',
             '12': 'dec'}
     yearcolor = {}
-    tot = pd.DataFrame(columns=['mese', 'stazione_id', 'valore', 'anno'])
-    for y in range(2011, 2019):
+    tot = pd.DataFrame(columns=['Data', 'Valore', 'Provincia'])
+    for y in range(2006, 2019):
         if y == year:
             yearcolor[y] = "red"
         else:
             yearcolor[y] = "grey"
-        df = pd.read_csv('../csv/pollution_detection/qaria_'+str(y)+'.csv', sep=';')
-        pdf = df[df['inquinante']==pollutant]
-        pdf = pdf[pdf['valore'] >= 0]
-        pdf = pdf.assign(mese = lambda x: x.data)
-        pdf.mese = pdf.mese.map(lambda x: x[5:-3])
-        pdf = pdf.groupby(by='mese', as_index=False).mean()
+        df = dataframes[y]
+        pdf = df[df['NomeTipoSensore']==pollutants[pollutant]]
+        pdf['Data'] = pdf['Data'].apply(lambda x: x[5:7])
+        pdf = pdf[pdf['Provincia'] == province]
+        pdf = pdf.set_index('Data').groupby(['Data', 'Provincia']).mean().reset_index()
         pdf = pdf.assign(anno = lambda x: y)
         tot = tot.append(pdf, ignore_index=True)
     fig = px.line_polar(tot,
-                        r='valore',
-                        theta='mese',
+                        r='Valore',
+                        theta='Data',
                         color='anno',
                         color_discrete_map=yearcolor,
                         line_close=True)
     fig.update_layout(showlegend=False)
     return fig
-
     
 ##################
 #   AREA GRAPH   #
 ##################
-max_pollutant = {
-        'NO2': 200,
-        'PM10': 50,
-        'PM25': 25,
-        'O3': 120, 
-        'CO_8h': 10,
-        'SO2' : 125,
-        'C6H6': 5
-        }
-
 #TODO togliere sfondo e anno dalle x, aggiungere trasparenza e titolo con anno
 #TODO in alternativa togliere il riempimento e mettere un secondo asse y e un istogramma basato su quell'asse
 #TODO grafico leggibile per SO2
-def area_graph(pollutant, year, mode='mean'):
+def area_graph(pollutant, year, province, mode='mean'):
     max_daily = max_pollutant[pollutant]
-    ds =pd.read_csv('../csv/pollution_detection/qaria_'+str(year)+'.csv', sep=';')
-    ds = ds[ds['inquinante'] == pollutant].dropna()[['data', 'valore']]
+    ds = dataframes[year]
+    ds = ds[ds['Provincia'] == province]
+    ds = ds[ds['NomeTipoSensore'] == pollutants[pollutant]]
+    ds = ds[['Data', 'Valore']]
     if mode == 'max':
-        ds = ds.groupby(by='data').max()
+        ds = ds.groupby(by='Data').max()
     if mode == 'mean':
-        ds = ds.groupby(by='data').mean()
+        ds = ds.groupby(by='Data').mean()
     x = ds.index
-    y = ds['valore']
+    y = ds['Valore']
     maxY = [max_daily] * x.size             #max legal level
     warY = [max_daily+max_daily] *x.size    #warning level
-    cleanY = [-max_daily*0.5]*x.size              #clean level
+    cleanY = [-max_daily*0.5]*x.size        #clean level
     posY = (y.where(y>maxY, maxY)) - maxY
     negY = (y.where(y<maxY, maxY)) - maxY
-    
     fig = go.Figure()
     fig.update_layout(
-                xaxis = dict(domain=[0, 0.29], anchor='y'),
-                xaxis2 = dict(domain=[0.3, 1], anchor='y2'),
-                yaxis = dict(anchor='x2', domain=[0,1], side='right'),
-                yaxis2 = dict(anchor='x', domain=[0,1], overlaying='y',side='left')
-            )
+        xaxis = dict(domain=[0, 0.29], anchor='y'),
+        xaxis2 = dict(domain=[0.3, 1], anchor='y2'),
+        yaxis = dict(anchor='x2', domain=[0,1], side='right'),
+        yaxis2 = dict(anchor='x', domain=[0,1], overlaying='y',side='left')
+    )
     fig.add_trace(go.Box(y=y, yaxis='y', xaxis='x'))
     fig.add_trace(go.Histogram(x=x,y=negY, marker_color='green',
         yaxis= 'y2',
@@ -102,10 +138,9 @@ def area_graph(pollutant, year, mode='mean'):
             start=x.min(),
             end=x.max(),
             size='D1'
-            ),
+        ),
         histfunc='sum')
-        )
-    
+    )
     fig.add_trace(go.Histogram(x=x,y=posY, marker_color='red',
         yaxis= 'y2',
         xaxis= 'x2',
@@ -113,29 +148,26 @@ def area_graph(pollutant, year, mode='mean'):
             start=x.min(),
             end=x.max(),
             size='D1'
-            ),
+        ),
         histfunc='sum')
-        )
-
+    )
     fig.add_trace(go.Scatter(x=x, y=y, xaxis='x2',yaxis='y',line_color='black', line_width=1))
     fig.add_trace(go.Scatter(x=x, y=maxY, xaxis='x2',yaxis='y',line_color='black', line_width=3))
     fig.add_trace(go.Scatter(x=x, y=warY, xaxis='x2',yaxis='y',line_color='purple', line_width=1))
     fig.add_trace(go.Scatter(x=x, y=maxY, xaxis='x2',yaxis='y2',line_color='purple', line_width=1))
     fig.add_trace(go.Scatter(x=x, y=cleanY, xaxis='x2',yaxis='y2',line_color='blue', line_width=1))
-
     fig.update_layout(
-            showlegend=False,
-            bargap=0,
-            yaxis2 = dict(
-                title = 'micrograms over limit',
-                showline=True
-            ),
-            yaxis = dict(
-                title = 'micrograms/metric cube',
-                showline=True
-            ))
-
-
+        showlegend=False,
+        bargap=0,
+        yaxis2 = dict(
+            title = 'micrograms over limit',
+            showline=True
+        ),
+        yaxis = dict(
+            title = 'micrograms/metric cube',
+            showline=True
+        )
+    )
     return fig
 
 #################
@@ -144,27 +176,6 @@ def area_graph(pollutant, year, mode='mean'):
 with open("../geojson/lombardia_province.geojson") as f:
     province_geo=json.load(f)
 
-years = range(2005, 2019)
-
-ranges = {
-        'PM10' : [18, 55],
-        'NO2' : [14, 72],
-        'PM25' : [10, 58],
-        'CO_8h' : [0.2, 1.6],
-        'O3' : [12, 64],
-        'SO2' : [0, 12],
-        'C6H6' : [0.5, 4]
-        }
-
-pollutants = {
-        'PM10' : ['PM10', 'PM10 (SM2005)'],
-        'NO2' : ['Biossido di Azoto'],
-        'PM25' : ['Particelle sospese PM2.5'],
-        'CO_8h' : ['Monossido di Carbonio'],
-        'O3' : ['Ozono'],
-        'SO2' : ['Biossido di Zolfo'],
-        'C6H6' : ['Benzene']
-        }
 prov_lookup = {feature['properties']['prov_acr']: feature for feature in province_geo['features']}
 
 def highlight(province):
@@ -181,9 +192,9 @@ def map_graph(poll, year, province):
         return
     pollutant = pollutants[poll]
     pollutant_range = ranges[poll]
-    chosen_year = pd.read_csv(f"../csv/lombardia/air_quality/{str(year)}.csv", encoding='utf-8', sep=',')
+    chosen_year = dataframes[year]
     #Remove unwanted pollutants
-    df = chosen_year[chosen_year['NomeTipoSensore'].isin(pollutant)]
+    df = chosen_year[chosen_year['NomeTipoSensore']==pollutant]
     #Calculate yearly mean by Province
     df = df.groupby(by=['Provincia'])
     df = df["Valore"].mean().reset_index()
@@ -219,19 +230,8 @@ def map_graph(poll, year, province):
 ##########################
 #   WEATHER CONDITIONS   #
 ##########################
-pollutants_list = {
-        'PM10' : ['PM10', 'PM10 (SM2005)'],
-        'NO2' : ['Biossido di Azoto'],
-        'PM25' : ['Particelle sospese PM2.5'],
-        'CO_8h' : ['Monossido di Carbonio'],
-        'O3' : ['Ozono'],
-        'SO2' : ['Biossido di Zolfo'],
-        'C6H6' : ['Benzene']
-        }
-
-
-def weather_pollutant(year, pollutant = [], weather_attribute = []):
-    csv = pd.read_csv('../csv/lombardia/scatter/'+str(year)+'/mean_'+str(year)+'_'+pollutant[0]+'_'+weather_attribute[0]+'.csv', encoding='utf-8', sep=',')
+def weather_pollutant(year, pollutant, weather_attribute = []):
+    csv = pd.read_csv('../csv/lombardia/scatter/'+str(year)+'/mean_'+str(year)+'_'+pollutants[pollutant]+'_'+weather_attribute[0]+'.csv', encoding='utf-8', sep=',')
     #Remove outliers
     if weather_attribute[0]=='Precipitazione':
         csv.drop(csv.index[(csv["Valore meteo"] > 0.4 )],axis=0,inplace=True)
@@ -250,13 +250,14 @@ def weather_pollutant(year, pollutant = [], weather_attribute = []):
 #################
 #   PIE CHART   #
 #################
-def doughnut_graph(poll, year):
+def doughnut_graph(poll, year, province):
     # Selected pollutant
-    chosen_year = pd.read_csv(f"../csv/lombardia/air_quality/{str(year)}.csv", encoding='utf-8', sep=',')
+    chosen_year = dataframes[year]
     # Remove broken values
-    polls = [item for sublist in pollutants_list.values() for item in sublist]
+    polls = [item for item in pollutants.values()]
     # Remove unwanted pollutants
     df = chosen_year[chosen_year['NomeTipoSensore'].isin(polls)]
+    df = df[df['Provincia'] == province]
     df = df.groupby(by=['NomeTipoSensore'])
     df = df["Valore"].mean().reset_index()
     # Calculate average
@@ -267,8 +268,8 @@ def doughnut_graph(poll, year):
         poll_average.append((row['Valore'] / limit_value[counter]) * 100)
         counter += 1
     # Donut chart
-    labels = ['Benzene [C6H6]', 'Biossido di Azoto [NO2]', 'Biossido di Zolfo [SO2]', 'Monossido di Carbonio [CO_8h]',
-              'Ozono [O3]', 'PM 10', 'PM 2.5']
+    labels = ['C6H6', 'NO2', 'SO2', 'CO_8h',
+              'O3', 'PM 10', 'PM 2.5']
     ordered_poll = ['C6H6', 'NO2', 'SO2', 'CO_8h', 'O3', 'PM10', 'PM25']
     pull = [0, 0, 0, 0, 0, 0, 0]
     c = 0
@@ -279,10 +280,8 @@ def doughnut_graph(poll, year):
     fig = go.Figure(data=[go.Pie(labels=labels, values=poll_average, hole=.4, pull=pull)])
     # pull argument for exploding
     fig.update_layout(
-        title_text=f"Emissioni Lombardia {str(year)}",
         annotations=[dict(text=f'{str(year)}', x=0.50, y=0.5, font_size=30, showarrow=False)])
     return fig
-
 
 #############
 #   LAYOUT  #
@@ -292,7 +291,7 @@ sg_card = dbc.Card(
         [
             dcc.Graph(
                 id='spyder_graph',
-                figure=sg2('PM10', 2017)
+                figure=sg2('PM10', 2018, 'MI')
             )
         ])
 
@@ -300,27 +299,27 @@ area_card = dbc.Card(
         [
             dcc.Graph(
                 id='area_graph',
-                figure=area_graph('PM10', 2017)
+                figure=area_graph('PM10', 2018, 'MI')
             )
         ])
 
 map_card = dbc.Card([
                 dcc.Graph(
                     id='map_graph',
-                    figure=map_graph('PM10', 2017, 'MI')
+                    figure=map_graph('PM10', 2018, 'MI')
                 )
             ])
 
 doughnut_card = dbc.Card([
                 dcc.Graph(
                     id='doughnut_graph',
-                    figure=doughnut_graph('PM10', 2017)
+                    figure=doughnut_graph('PM10', 2018, 'MI')
                     )
                 ])
 weather_scatter_card = dbc.Card([
                 dcc.Graph(
                     id='weather_graph',
-                    figure=weather_pollutant(2017, pollutants_list['PM10'], ['Precipitazione']))
+                    figure=weather_pollutant(2018, 'PM10', ['Precipitazione']))
                 ])
 weather_controls =   dbc.Row([
                 dbc.Col(
@@ -377,10 +376,10 @@ specific_controls =  dbc.Row([
                 dbc.Col(
                     dcc.Slider(
                         id='year',
-                        min=2011,
-                        max=2017,
-                        marks={i: str(i)  for i in range(2011, 2018)},
-                        value=2017,
+                        min=2006,
+                        max=2018,
+                        marks={i: str(i)  for i in range(2006, 2019)},
+                        value=2018,
                     ),
                     md=8
                 )
@@ -440,7 +439,7 @@ def render_content(tab):
         Input('weather', 'value')
         )
 def weather_update(pollutant, weather):
-    return weather_pollutant(2018, pollutants_list[pollutant], [weather])
+    return weather_pollutant(2018, pollutant, [weather])
 
 @app.callback(
         Output(component_id='map_graph', component_property='figure'),
@@ -452,17 +451,16 @@ def weather_update(pollutant, weather):
         Input(component_id='map_graph', component_property='clickData'),
         )
 def update(pollutant, year, click):
-    provincia = 'MI'
+    province = 'MI'
     if click is not None:
-        provincia = click['points'][0]['location']
-    print(provincia)
+        province = click['points'][0]['location']
+    print(province)
     return (
-        map_graph(pollutant, year, provincia),
-        sg2(pollutant, year),
-        doughnut_graph(pollutant, year),
-        area_graph(pollutant, year)
-            )
-
+        map_graph(pollutant, year, province),
+        sg2(pollutant, year, province),
+        doughnut_graph(pollutant, year, province),
+        area_graph(pollutant, year, province)
+    )
 
 if __name__ == '__main__':
     app.run_server(debug=True)
