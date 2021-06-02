@@ -236,7 +236,12 @@ def weather_pollutant(year, pollutant, weather_attribute = []):
     if weather_attribute[0]=='Precipitazione':
         csv.drop(csv.index[(csv["Valore meteo"] > 0.4 )],axis=0,inplace=True)
     #Plot
-    return px.scatter(csv, x='Valore meteo', y='Valore inquinante')
+    fig = px.scatter(csv, x='Valore meteo', y='Valore inquinante')
+    fig.update_traces(marker=dict(size=12,
+                    line=dict(width=2,
+                    color='DarkSlateGrey')),
+                    selector=dict(mode='markers'))
+    return fig
     #weather = np.array(csv['Valore meteo'])
     #pollutant = np.array(csv['Valore inquinante'])
     #Pearson
@@ -318,6 +323,7 @@ doughnut_card = dbc.Card([
                 ])
 weather_scatter_card = dbc.Card([
                 dcc.Graph(
+                    style = {'height':'85vh'},
                     id='weather_graph',
                     figure=weather_pollutant(2018, 'PM10', ['Precipitazione']))
                 ])
@@ -346,7 +352,6 @@ weather_controls =   dbc.Row([
                                 {'label': 'Humidity', 'value': 'Umidità Relativa'},
                                 {'label': 'Temperature', 'value': 'Temperatura'},
                                 {'label': 'Wind speed', 'value': 'Velocità Vento'},
-                                {'label': 'Snow', 'value': 'Altezza Neve'},
                                 {'label': 'Global radiation', 'value': 'Radiazione Globale'},
                                 {'label': 'Precipitation', 'value': 'Precipitazione'}
                                 ],
@@ -391,6 +396,7 @@ app.layout = html.Div([
         dcc.Tab(label='General Tab', value='tab-1'),
         dcc.Tab(label='Specific Tab', value='tab-2'),
         dcc.Tab(label='Weather Tab', value='tab-3'),
+        dcc.Tab(label='Desease', value='tab-4'),
         ]),
     html.Div(id='tab-content')
     ])
@@ -420,6 +426,11 @@ weather_tab = html.Div([
     weather_scatter_card
     ])
 
+desease_tab = html.Div([
+    html.H3('desease_tab')
+    ])
+
+
 #################
 #   CALLBACKS   #
 #################
@@ -432,6 +443,8 @@ def render_content(tab):
         return specific_tab
     elif tab == 'tab-3':
         return weather_tab
+    elif tab == 'tab-4':
+        return desease_tab
 
 @app.callback(
         Output('weather_graph', 'figure'),
