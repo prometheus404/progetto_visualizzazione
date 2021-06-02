@@ -287,10 +287,57 @@ def doughnut_graph(poll, year, province):
     fig.update_layout(
         annotations=[dict(text=f'{str(year)}', x=0.50, y=0.5, font_size=30, showarrow=False)])
     return fig
+#####################
+#   DESCRIPTION     #
+#####################
+descriptions = {
+        'PM10': "-PM10: è un acronimo che significa materiale particolato con dimensione inferiore o uguale a 10 micrometri. Si tratta di materiale allo stato solido o liquido, disperso finemente nella bassa atmosfera e particolarmente stanziale in condizioni meteorologiche simili a quelle attuali. principali fonti di particolato sono: Sorgenti legate all'attività umana: processi di combustione (tra cui quelli che avvengono nei motori a scoppio, negli impianti di riscaldamento, in molte attività industriali, negli inceneritori e nelle centrali termoelettriche), usura di pneumatici, freni e asfalto; Sorgenti naturali: l'erosione del suolo, gli incendi boschivi, le eruzioni vulcaniche, la dispersione di pollini, il sale marino. Secondo l'agenzia europea dell'ambiente, la combustione per riscaldamento degli edifici risulta essere la principale fonte di PM10 e PM2,5 COSA CAUSA? Di massima più il numero è basso, più le polveri sono sottili ed anche più pericolose per la salute della specie umana ed animale. Infatti mentre il PM 10 raggiunge solo i bronchi, la trachea e vie respiratorie superiori, il PM 2,5 è in grado di penetrare negli alveoli polmonari con eventuale diffusione nel sangue. Nelle donne ci sono evidenza che il PM 2,5 venga ad accumularsi nel seno causando il cancro al seno",
+        'PM25': "-PM10/2,5: è un acronimo che significa Particulate Matter, ovvero materiale particolato con dimensione inferiore o uguale a 10/2,5 micrometri. Si tratta di materiale allo stato solido o liquido, disperso finemente nella bassa atmosfera e particolarmente stanziale in condizioni meteorologiche simili a quelle attuali.principali fonti di particolato sono: Sorgenti legate all'attività umana: processi di combustione (tra cui quelli che avvengono nei motori a scoppio, negli impianti di riscaldamento, in molte attività industriali, negli inceneritori e nelle centrali termoelettriche), usura di pneumatici, freni e asfalto; Sorgenti naturali: l'erosione del suolo, gli incendi boschivi, le eruzioni vulcaniche, la dispersione di pollini, il sale marino. Secondo l'agenzia europea dell'ambiente, la combustione per riscaldamento degli edifici risulta essere la principale fonte di PM10 e PM2,5 COSA CAUSA? Di massima più il numero è basso, più le polveri sono sottili ed anche più pericolose per la salute della specie umana ed animale. Infatti mentre il PM 10 raggiunge solo i bronchi, la trachea e vie respiratorie superiori, il PM 2,5 è in grado di penetrare negli alveoli polmonari con eventuale diffusione nel sangue. Nelle donne ci sono evidenza che il PM 2,5 venga ad accumularsi nel seno causando il cancro al seno",
+        'CO_8h': "CO_8h= Monossido di carbonio (CO), indica la concentrazione media su 8 ore. Il monossido di carbonio (o ossido di carbonio o ossido carbonioso) è un gas incolore, inodore e insapore leggermente meno denso dell'aria. Se presente in concentrazioni superiori a circa 35 ppm risulta altamente tossico per gli animali, sia vertebrati che invertebrati, Viene prodotto da reazioni di combustione in difetto di aria (cioè quando l'ossigeno presente nell'aria non è sufficiente a convertire tutto il carbonio in anidride carbonica[3]), per esempio negli incendi di foreste e boschi, dove il prodotto principale della combustione rimane comunque l'anidride carbonica; altre fonti naturali sono i vulcani COSA PROVOCA? I pazienti possono presentare anche molti altri sintomi, compresi deficit visivi, dolore addominale e deficit neurologici focali. In caso di intossicazione grave, a distanza di giorni fino a settimane dopo l'esposizione, si sviluppano sintomi neuropsichiatrici (p. es., demenza, psicosi, parkinsonismo, corea, sindromi amnesiche) che possono divenire permanenti. Poiché l'intossicazione deriva spesso da incendi, i pazienti presentano lesioni respiratorie concomitanti (vedi Inalazione di fumo), che aumentano il rischio di insufficienza respiratoria.",
+        'O3': "O3:L'ozono (formula chimica: O3) è una forma allotropica dell'ossigeno, dal caratteristico odore agliaceo. È un gas instabile (gassoso, a 20 °C ha un tempo di dimezzamento di tre giorni, in soluzione acquosa di 20 minuti), e allo stato liquido è esplosivo. Ha un odore pungente caratteristico - lo stesso che accompagna talvolta i temporali, dovuto proprio all'ozono prodotto dalle scariche elettriche dei fulmini. Dato il suo potere ossidante, l'ozono viene impiegato per sbiancare e disinfettare, in maniera analoga al cloro COSA PROVOCA? Può causare effetti irritativi alle mucose oculari e alle prime vie aeree, tosse, fenomeni broncostruttivi ed alterazione della funzionalità respiratoria. In studi epidemiologici condotti in popolazioni urbane esposte ad ozono sono stati osservati sintomi irritativi sulle mucose oculari e sulle prime vie respiratorie per esposizioni di alcune ore a livelli di ozono a partire da 0,2 mg/m3 (media oraria). In bambini ed in giovani adulti sono state osservate riduzioni transitorie della funzionalità respiratoria, a livelli inferiori di ozono, a partire da 0,12 mg/m3 (media oraria). Sono invece disponibili pochi studi sugli effetti per esposizioni croniche a questo inquinante",
+        'C6H6': "C6H6=Il benzene è un composto chimico che a temperatura ambiente e pressione atmosferica si presenta sotto forma di liquido volatile incolore altamente infiammabile, dall'odore caratteristico. È un costituente naturale del petrolio. Il benzene viene prodotto per combustione incompleta di composti ricchi in carbonio, ad esempio, è prodotto naturalmente nei vulcani o negli incendi di foreste, ma anche nel fumo delle sigarette, o comunque a temperature superiori ai 500 °C.Il benzene è presente nei gas di scarico delle vetture COSA CAUSA? L'inalazione di un tasso molto elevato di benzene può portare al decesso; un'esposizione da cinque a dieci minuti a un tasso di benzene nell'aria al 2% (ovvero 20 000 ppm) è sufficiente a condurre un uomo alla morte.[48] Dei tassi più bassi possono generare sonnolenza, vertigini, tachicardia, mal di testa, tremori, stato confusionale o perdita di coscienza. La dose letale per ingestione è di circa 50÷500 mg/kg (milligrammo di sostanza ingerita rispetto al peso dell'individuo espresso in chilogrammi). Il principale effetto di un'esposizione cronica al benzene è il danneggiamento dei tessuti ossei e la diminuzione delle cellule del midollo osseo, che può causare una diminuzione del tasso di globuli rossi nel sangue e un'anemia aplastica o una leucemia. Può anche dare origine a coaguli, difficoltà di coagulazione del sangue e indebolimenti del sistema immunitario.",
+        'SO2': "SO2_: L'anidride solforosa è un gas incolore. È uno dei principali inquinanti atmosferici a base di zolfo. La principale fonte di inquinamento è costituita dalla combustione di combustibili fossili (carbone e derivati del petrolio) in cui lo zolfo è presente come impurezza. Vengono pure emesse nell'atmosfera durante le eruzioni vulcaniche. A partire dal 1980 le emissioni provocate direttamente dall'uomo (a causa di riscaldamento e traffico) sono notevolmente diminuite grazie all'utilizzo sempre crescente del metano e alla diminuzione della quantità di zolfo contenuta nel gasolio e in altri combustibili liquidi e solidi. COSA CAUSA? La sostanza è fortemente irritante e nociva per gli occhi e il tratto respiratorio: per inalazione può causare edema polmonare acuto ed una prolungata esposizione può portare alla morte. L'anidride solforosa è un forte irritante delle vie respiratorie; un'esposizione prolungata a concentrazioni anche minime (alcune parti per miliardo, ppb) può comportare faringiti, affaticamento e disturbi a carico dell'apparato sensoriale (occhi, naso, etc.). L'anidride solforosa è una delle principali cause delle piogge acide, fenomeno che riduce la visibilità atmosferica e danneggia le foreste, il suolo, la fauna ittica e le altre specie viventi, nonché la salute umana.",
+        'NO2': "No2=Il diossido di azoto (noto anche come ipoazotide, specie se in forma dimera, N2O4) è un gas rosso bruno a temperatura ordinaria dall'odore soffocante, irritante e caratteristico. È più denso dell'aria, pertanto i suoi vapori tendono a rimanere a livello del suolo. In generale, gli ossidi di azoto (NOX) vengono prodotti da tutti i processi di combustione ad alta temperatura (impianti di riscaldamento, motori dei veicoli, combustioni industriali, centrali di potenza, etc.), per ossidazione dell’azoto atmosferico e, in piccola parte, per ossidazione dei composti dell’azoto contenuti nei combustibili. Il biossido di azoto è un inquinante per lo più secondario, che si forma in atmosfera principalmente per ossidazione del monossido di azoto (NO). COSA PROVOCA? Il diossido di azoto è un forte irritante delle vie polmonari; già a moderate concentrazioni nell'aria provoca tosse acuta, dolori al torace, convulsioni e insufficienza circolatoria. Può inoltre provocare danni irreversibili ai polmoni che possono manifestarsi anche molti mesi dopo l'attacco"
+        }
+
+def update_description(pollutant):
+    return descriptions[pollutant]
+
+#################
+#   DAYS OVER   #
+#################
+def update_days(pollutant, year, province):
+    max_daily = max_pollutant[pollutant]
+    df = dataframes[year]
+    df = df[df['Provincia'] == province]
+    df = df[df['NomeTipoSensore'] == pollutants[pollutant]]
+    print(df)
+    days_warning = len(df[df['Valore'] >= (2*max_daily)].groupby('Data'))
+    days_max = len(df[df['Valore'] >= (max_daily)].groupby('Data')) - days_warning
+    days_low = len(df[df['Valore'] >= (0.5*max_daily)].groupby('Data')) - (days_warning + days_max)
+    days_clean = len(df[df['Valore'] >= (0.25*max_daily)].groupby('Data')) - (days_warning + days_max + days_low)
+ 
+    return html.Div([
+                html.H1(str(days_warning) + 'days'),
+                html.P("extremely polluted"),
+                html.H1(str(days_max) + 'days'),
+                html.P("highly polluted"),
+                html.H1(str(days_low) + 'days'),
+                html.P("mildly polluted"),
+                html.H1(str(days_clean)+ 'days'),
+                html.P("clean"),
+                ])
+
 
 #############
 #   LAYOUT  #
 #############
+days_over_card = dbc.Card([
+            html.Div(id='days_over_card', children=update_days('PM10', 2018, 'MI'))
+            ])
+description_card = dbc.Card([
+            html.P(id = 'description', children=update_description('PM10'))
+            ])
 
 sg_card = dbc.Card(
         [
@@ -408,10 +455,12 @@ specific_tab = html.Div([
     dbc.Row(
         [
             dbc.Col(map_card, md=6),
-            dbc.Col(sg_card, md=4)
+            dbc.Col(sg_card, md=4),
+            dbc.Col(description_card, md=2)
         ], className='mb-4'),
     
     dbc.Row([
+            dbc.Col(days_over_card, md=2),
             dbc.Col(doughnut_card, md=4),
             dbc.Col(area_card, md=6)
         ])
@@ -459,6 +508,8 @@ def weather_update(pollutant, weather):
         Output(component_id='spyder_graph', component_property='figure'),
         Output(component_id='doughnut_graph', component_property='figure'),
         Output(component_id='area_graph', component_property='figure'),
+        Output(component_id='description', component_property='children'),
+        Output(component_id='days_over_card', component_property='children'),
         Input(component_id='pollutant', component_property='value'),
         Input(component_id='year', component_property='value'),
         Input(component_id='map_graph', component_property='clickData'),
@@ -472,7 +523,9 @@ def update(pollutant, year, click):
         map_graph(pollutant, year, province),
         sg2(pollutant, year, province),
         doughnut_graph(pollutant, year, province),
-        area_graph(pollutant, year, province)
+        area_graph(pollutant, year, province),
+        update_description(pollutant),
+        update_days(pollutant, year, province)
     )
 
 if __name__ == '__main__':
