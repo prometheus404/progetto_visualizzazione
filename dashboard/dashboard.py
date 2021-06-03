@@ -593,16 +593,17 @@ def total_doughnut_graph():
 #   CORRELATION COEFFICIENT     #
 #################################
 #def update_cc(pollutant, chosen_deseases):
-    
+
 #############
 #   LAYOUT  #
 #############
 days_over_card = dbc.Card([
     html.Div(id='days_over_card', children=update_days('PM10', 2018, 'MI'))
-],style={'text-align' : 'center'})
+],style={'border': '2px solid black', 'padding': '15px', 'text-align' : 'center'})
+
 description_card = dbc.Card([
     html.P(id='description', children=update_description('PM10'))
-    ],style={'text-align' : 'center'})
+    ],style={'border': '2px solid black', 'padding': '15px', 'text-align' : 'center'})
 
 sg_card = dbc.Card(
     [
@@ -610,7 +611,7 @@ sg_card = dbc.Card(
             id='spider_graph',
             figure=sg2('PM10', 2018, 'MI')
         )
-    ])
+    ], style={'border': '2px solid black'})
 
 area_card = dbc.Card(
     [
@@ -618,61 +619,60 @@ area_card = dbc.Card(
             id='area_graph',
             figure=area_graph('PM10', 2018, 'MI')
         )
-    ])
+    ], style={'border': '2px solid black'})
 
 map_card = dbc.Card([
     dcc.Graph(
         id='map_graph',
         figure=map_graph('PM10', 2018, 'MI')
     )
-])
+], style={'border': '2px solid black', 'padding': '10px'})
 
 doughnut_card = dbc.Card([
     dcc.Graph(
         id='doughnut_graph',
         figure=doughnut_graph('PM10', 2018, 'MI')
     )
-])
+], style={'border': '2px solid black'})
 
 weather_scatter_card = dbc.Card([
     dcc.Graph(
         style={'height': '85vh'},
         id='weather_graph',
         figure=weather_pollutant(2018, 'PM10', ['Precipitazione']))
-])
+], style={'border': '2px solid black'})
 
 total_map_card = dbc.Card([
     dcc.Graph(
         id='total_map_graph',
         figure=total_map_graph()
     )
-])
+], style={'border': '2px solid black', 'padding': '10px'})
 
 trend_card = dbc.Card([
     dcc.Graph(
-        style={'height': '40vh'},
         id='trend_graph',
         figure=trend_graph()
     )
-])
+], style={'border': '2px solid black'})
 
 desease_card = dbc.Card([
     dcc.Graph(
         id='desease_graph',
         figure=desease_graph('PM10', ['du cui altre malattie ischemiche del cuore']),
     )
-])
+], style={'border': '2px solid black'})
 
 correlation_coeff_card = dbc.Card([
     html.Div(id='correlation_coeff_card', children='PM10')
-    ], style={ 'text-align' : 'center',"font-family":'georgia,garamond,serif','font-size':'16px','font-style':'italic'})
+    ], style={'border': '2px solid black', 'padding': '15px', 'height': '450px', 'text-align': 'center'})
 
 total_doughnut_card = dbc.Card([
     dcc.Graph(
         id='total_doughnut_graph',
         figure=total_doughnut_graph()
     )
-])
+], style={'border': '2px solid black'})
 
 weather_controls = dbc.Row([
     dbc.Col(
@@ -765,7 +765,10 @@ specific_tab = html.Div([
         dbc.Col(doughnut_card, md=4),
         dbc.Col(area_card, md=6)
     ])
-])
+], style = { 'background-color': 'lightgrey',
+  'width': 'auto',
+  'border': '15px solid orange',
+  'padding': '25px'})
 
 general_tab = html.Div([
     dbc.Row(
@@ -777,12 +780,18 @@ general_tab = html.Div([
         [
             dbc.Col(total_doughnut_card, md=6),
         ], className='mb-4'),
-])
+],style = { 'background-color': 'lightgrey',
+  'width': 'auto',
+  'border': '15px solid orange',
+  'padding': '25px'})
 
 weather_tab = html.Div([
     weather_controls,
     weather_scatter_card
-])
+], style = { 'background-color': 'lightgrey',
+  'width': 'auto',
+  'border': '15px solid orange',
+  'padding': '25px'})
 
 desease_tab = html.Div([
     dbc.Row(
@@ -873,7 +882,10 @@ desease_tab = html.Div([
             dbc.Col(trend_card,md=6),
             dbc.Col(correlation_coeff_card, md=6)
         ], className='mb-4')
-])
+], style = { 'background-color': 'lightgrey',
+  'width': 'auto',
+  'border': '15px solid orange',
+  'padding': '25px'})
 
 
 #################
