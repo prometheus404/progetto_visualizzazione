@@ -372,13 +372,13 @@ def doughnut_graph(poll, year, province):
 #   DESCRIPTION     #
 #####################
 descriptions = {
-    'PM10': 'PM 10: materiale particolato con dimensione inferiore o uguale a 10 micrometri. Disperso finemente nella bassa atmosfera. Rilasciato principalmente da attività legate all\'uomo, quali ad esempio processi di combustione," usura di pneumatici, freni e asfalto;" ma anche da fonti naturali, ad esempio dall\'erosione del suolo, incendi boschivi, eruzioni vulcaniche. Secondo l\'agenzia europea dell\'ambiente, la combustione per riscaldamento degli  edifici risulta essere la principale fonte di PM10 e PM2,5.',
-    'PM25': 'PM 2,5: materiale particolato con dimensione inferiore o uguale a 2,5 micrometri. Si tratta di materiale allo stato solido o liquido, disperso finemente nella bassa atmosfera. Rilasciato principalmente da attività legate all\'uomo, quali ad esempio processi di combustione, usura di pneumatici, freni e asfalto; ma anche da fonti naturali, ad esempio dall\'erosione del suolo, incendi boschivi, eruzioni vulcaniche. Secondo l\'agenzia europea dell\'ambiente, la combustione per riscaldamento degli  edifici risulta essere la principale fonte di PM10 e PM2,5.',
-    'CO_8h': 'Monossido di carbonio (CO), indica la concentrazione media su 8 ore. Il monossido di carbonio è un gas incolore, inodore e insapore leggermente meno denso dell\'aria. Se presente in concentrazioni superiori a circa 35 ppm risulta altamente tossico per gli animali, sia vertebrati che invertebrati. Viene prodotto da reazioni di combustione in difetto di aria, per esempio negli incendi di foreste e boschi, o eruzioni vulcaniche.',
-    'O3': 'L\'ozono (O3) è una forma allotropica dell\'ossigeno, dal caratteristico odore agliaceo. È un gas instabile (gassoso, a 20 °C ha un tempo di dimezzamento di tre giorni, in soluzione acquosa di 20 minuti), e allo stato liquido è esplosivo. Ha un odore pungente caratteristico - lo stesso che accompagna talvolta i temporali, dovuto proprio all\'ozono prodotto dalle scariche elettriche dei fulmini.',
-    'C6H6': 'Il benzene (C6H6) è un composto chimico che a temperatura ambiente e pressione atmosferica si presenta sotto forma di liquido volatile incolore altamente infiammabile, dall\'odore caratteristico. È un costituente naturale del petrolio. Il benzene viene prodotto per combustione incompleta di composti ricchi in carbonio, ad esempio, è prodotto naturalmente nei vulcani o negli incendi di foreste, ma anche nel fumo delle sigarette, o comunque a temperature superiori ai 500 °C.Il benzene è presente nei gas di scarico delle vetture ',
-    'SO2': 'L\'anidride solforosa (SO2) è un gas incolore. È uno dei principali inquinanti atmosferici a base di zolfo. La principale fonte di inquinamento è costituita dalla combustione di combustibili fossili (carbone e derivati del petrolio) in cui lo zolfo è presente come impurezza. Vengono pure emesse nell\'atmosfera durante le eruzioni vulcaniche. A partire dal 1980 le emissioni provocate direttamente dall\'uomo (a causa di riscaldamento e traffico) sono notevolmente diminuite grazie all\'utilizzo sempre crescente del metano e alla diminuzione della quantità di zolfo contenuta nel gasolio e in altri combustibili liquidi e solidi.',
-    'NO2': 'Il diossido di azoto (NO2) è un gas rosso bruno a temperatura ordinaria dall\'odore soffocante, irritante e caratteristico. È più denso dell\'aria, pertanto i suoi vapori tendono a rimanere a livello del suolo. In generale, gli ossidi di azoto (NOX) vengono prodotti da tutti i processi di combustione ad alta temperatura (impianti di riscaldamento, motori dei veicoli, combustioni industriali, centrali di potenza, etc.), per ossidazione dell’azoto atmosferico e, in piccola parte, per ossidazione dei composti dell’azoto contenuti nei combustibili. Il biossido di azoto è un inquinante per lo più secondario, che si forma in atmosfera principalmente per ossidazione del monossido di azoto (NO).'
+        'PM10': 'PM 10: Particulates are microscopic particles of solid or liquid matter suspendend in the air, wiht Pm 10 we refer to  suspended particulate matter with a diameter of 10 micrometers. Some particulates occur naturally, originating from volcanoes, dust storms or forest fires. Human activities, such as the burning of fossil fuels in vehicles, stubble burning, cooling systems and various industrial processes also generate significant amounts of particulates. This kind of particulates have impact on climate and precipitation that adversely affect human health, in ways additional to direct inhalation.',
+        'PM25': 'PM 2,5: Particulates are microscopic particles of solid or liquid matter suspendend in the air, wiht Pm 2,5 we refer to  suspended particulate matter with a diameter of 2,5 micrometers. Some particulates occur naturally, originating from volcanoes, dust storms or forest fires. Human activities, such as the burning of fossil fuels in vehicles, stubble burning, cooling systems and various industrial processes also generate significant amounts of particulates. This kind of particulates have impact on climate and precipitation that adversely affect human health, in ways additional to direct inhalation.',
+        'CO_8h': 'Carbon monoxide (CO), refers to the 8-hours average concentration. Carbon monoxide is a colorless, odorless, tasteless, flammable gas that is slightly less dense than air, that\'s why it creates a smog type formation in the air. Humans utilize carbon monoxide for various industrial processes, which causes a proplematic air pollutant arising.',
+        'O3': 'Ozone (O3) is a trace gas, with an average concentration of 20-30 parts per billion by volume, with close to 100 in polluted areas. At abnormally high concentrations, brought about by human activities (largely the combustion of fossil fuel), it is a pollutant and a constituent of smog. Its levels have increased significantly since the industrial revolution.',
+        'C6H6': ' Benzene (C6H6) is a colorless and highly fammable liquid with a sweet smell. It is a natural constituent of crude oil and is one ot the elementary petrochemicals. The benzene naturally occurs in process that includes volcanic eruptions and wild fires. The major sources of benzene exposure are tobacco smoje, automobile service stations, exhaust from motor vehicles, and industrial emissions. Although a major industrial chemical, benzene finds limited use in consumer items because of its toxicity.',
+        'SO2': 'Sulfur dioxide (SO2) is a colorless gas. Sulfur dioxide is produced by volcanoes and in various industrial processes. Coal and petroleum often contain sulfur compounds, and their combustion generates sulfur dioxide. Its oxidation is the main cause of acid rain. This is one of the causes for concern over the environmental impact of the use of these fuels as power sources.',
+        'NO2': 'Nitrogen dioxideÂ (NO2) is a reddish-brown toxic gas with a characteristic sharp, biting odor. Nitrogen dioxide is expelled from high temperature combustion. It is one of the most prominent air pollutant.For the general public, the most prominent sources of NO2 are internal combustion engines burning fossil fuels. Outdoors, NO2 can be a result of traffic from motor vehicles. Indoors, exposure arises from cigarette smoke, and butane and kerosene heaters and stoves.'
 }
 
 
@@ -394,19 +394,19 @@ def update_days(pollutant, year, province):
     df = dataframes[year]
     df = df[df['Provincia'] == province]
     df = df[df['NomeTipoSensore'] == pollutants[pollutant]]
-    days_warning = len(df[df['Valore'] >= (2 * max_daily)].groupby('Data'))
-    days_max = len(df[df['Valore'] >= (max_daily)].groupby('Data')) - days_warning
-    days_low = len(df[df['Valore'] >= (0.5 * max_daily)].groupby('Data')) - (days_warning + days_max)
-    days_clean = len(df[df['Valore'] >= (0.25 * max_daily)].groupby('Data')) - (days_warning + days_max + days_low)
-
+    df = df.groupby('Data').mean()
+    days_warning = len(df[df['Valore'] >= (2 * max_daily)])
+    days_max = len(df[df['Valore'] >= (max_daily)]) - days_warning
+    days_low = len(df[df['Valore'] >= (0.5 * max_daily)]) - (days_warning + days_max)
+    days_clean = len(df[df['Valore'] <= (0.25 * max_daily)])
     return html.Div([
-        html.H1(str(days_warning) + 'days'),
+        html.H1(str(days_warning) + ' days'),
         html.P("extremely polluted"),
-        html.H1(str(days_max) + 'days'),
+        html.H1(str(days_max) + ' days'),
         html.P("highly polluted"),
-        html.H1(str(days_low) + 'days'),
+        html.H1(str(days_low) + ' days'),
         html.P("mildly polluted"),
-        html.H1(str(days_clean) + 'days'),
+        html.H1(str(days_clean) + ' days'),
         html.P("clean"),
     ])
 
