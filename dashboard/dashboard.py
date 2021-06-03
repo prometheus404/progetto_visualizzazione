@@ -6,6 +6,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import pandas as pd
+import scipy.stats
+import numpy as np
 from dash.dependencies import Input, Output
 
 # slate theme (?)
@@ -368,17 +370,17 @@ def doughnut_graph(poll, year, province):
     return fig
 
 
-#####################
-#   DESCRIPTION     #
-#####################
+####################
+#   DESCRIPTION    #
+####################
 descriptions = {
-        'PM10': 'PM 10: Particulates are microscopic particles of solid or liquid matter suspendend in the air, wiht Pm 10 we refer to  suspended particulate matter with a diameter of 10 micrometers. Some particulates occur naturally, originating from volcanoes, dust storms or forest fires. Human activities, such as the burning of fossil fuels in vehicles, stubble burning, cooling systems and various industrial processes also generate significant amounts of particulates. This kind of particulates have impact on climate and precipitation that adversely affect human health, in ways additional to direct inhalation.',
-        'PM25': 'PM 2,5: Particulates are microscopic particles of solid or liquid matter suspendend in the air, wiht Pm 2,5 we refer to  suspended particulate matter with a diameter of 2,5 micrometers. Some particulates occur naturally, originating from volcanoes, dust storms or forest fires. Human activities, such as the burning of fossil fuels in vehicles, stubble burning, cooling systems and various industrial processes also generate significant amounts of particulates. This kind of particulates have impact on climate and precipitation that adversely affect human health, in ways additional to direct inhalation.',
-        'CO_8h': 'Carbon monoxide (CO), refers to the 8-hours average concentration. Carbon monoxide is a colorless, odorless, tasteless, flammable gas that is slightly less dense than air, that\'s why it creates a smog type formation in the air. Humans utilize carbon monoxide for various industrial processes, which causes a proplematic air pollutant arising.',
-        'O3': 'Ozone (O3) is a trace gas, with an average concentration of 20-30 parts per billion by volume, with close to 100 in polluted areas. At abnormally high concentrations, brought about by human activities (largely the combustion of fossil fuel), it is a pollutant and a constituent of smog. Its levels have increased significantly since the industrial revolution.',
-        'C6H6': ' Benzene (C6H6) is a colorless and highly fammable liquid with a sweet smell. It is a natural constituent of crude oil and is one ot the elementary petrochemicals. The benzene naturally occurs in process that includes volcanic eruptions and wild fires. The major sources of benzene exposure are tobacco smoje, automobile service stations, exhaust from motor vehicles, and industrial emissions. Although a major industrial chemical, benzene finds limited use in consumer items because of its toxicity.',
-        'SO2': 'Sulfur dioxide (SO2) is a colorless gas. Sulfur dioxide is produced by volcanoes and in various industrial processes. Coal and petroleum often contain sulfur compounds, and their combustion generates sulfur dioxide. Its oxidation is the main cause of acid rain. This is one of the causes for concern over the environmental impact of the use of these fuels as power sources.',
-        'NO2': 'Nitrogen dioxideÂ (NO2) is a reddish-brown toxic gas with a characteristic sharp, biting odor. Nitrogen dioxide is expelled from high temperature combustion. It is one of the most prominent air pollutant.For the general public, the most prominent sources of NO2 are internal combustion engines burning fossil fuels. Outdoors, NO2 can be a result of traffic from motor vehicles. Indoors, exposure arises from cigarette smoke, and butane and kerosene heaters and stoves.'
+    'PM10': 'PM 10: Particulates are microscopic particles of solid or liquid matter suspendend in the air, wiht Pm 10 we refer to  suspended particulate matter with a diameter of 10 micrometers. Some particulates occur naturally, originating from volcanoes, dust storms or forest fires. Human activities, such as the burning of fossil fuels in vehicles, stubble burning, cooling systems and various industrial processes also generate significant amounts of particulates. This kind of particulates have impact on climate and precipitation that adversely affect human health, in ways additional to direct inhalation.',
+    'PM25': 'PM 2,5: Particulates are microscopic particles of solid or liquid matter suspendend in the air, wiht Pm 2,5 we refer to  suspended particulate matter with a diameter of 2,5 micrometers. Some particulates occur naturally, originating from volcanoes, dust storms or forest fires. Human activities, such as the burning of fossil fuels in vehicles, stubble burning, cooling systems and various industrial processes also generate significant amounts of particulates. This kind of particulates have impact on climate and precipitation that adversely affect human health, in ways additional to direct inhalation.',
+    'CO_8h': 'Carbon monoxide (CO), refers to the 8-hours average concentration. Carbon monoxide is a colorless, odorless, tasteless, flammable gas that is slightly less dense than air, that\'s why it creates a smog type formation in the air. Humans utilize carbon monoxide for various industrial processes, which causes a proplematic air pollutant arising.',
+    'O3': 'Ozone (O3) is a trace gas, with an average concentration of 20-30 parts per billion by volume, with close to 100 in polluted areas. At abnormally high concentrations, brought about by human activities (largely the combustion of fossil fuel), it is a pollutant and a constituent of smog. Its levels have increased significantly since the industrial revolution.',
+    'C6H6': ' Benzene (C6H6) is a colorless and highly fammable liquid with a sweet smell. It is a natural constituent of crude oil and is one ot the elementary petrochemicals. The benzene naturally occurs in process that includes volcanic eruptions and wild fires. The major sources of benzene exposure are tobacco smoje, automobile service stations, exhaust from motor vehicles, and industrial emissions. Although a major industrial chemical, benzene finds limited use in consumer items because of its toxicity.',
+    'SO2': 'Sulfur dioxide (SO2) is a colorless gas. Sulfur dioxide is produced by volcanoes and in various industrial processes. Coal and petroleum often contain sulfur compounds, and their combustion generates sulfur dioxide. Its oxidation is the main cause of acid rain. This is one of the causes for concern over the environmental impact of the use of these fuels as power sources.',
+    'NO2': 'Nitrogen dioxideÂ (NO2) is a reddish-brown toxic gas with a characteristic sharp, biting odor. Nitrogen dioxide is expelled from high temperature combustion. It is one of the most prominent air pollutant.For the general public, the most prominent sources of NO2 are internal combustion engines burning fossil fuels. Outdoors, NO2 can be a result of traffic from motor vehicles. Indoors, exposure arises from cigarette smoke, and butane and kerosene heaters and stoves.'
 }
 
 
@@ -509,14 +511,42 @@ def desease_graph(pollutant, chosen_deseases=[]):
     # Plot
     fig = px.scatter(result2, x='Valore', y='Value', color='Data',
                      labels={
-                         "Valore": pollutant+" value",
+                         "Valore": pollutant + " value",
                          "Value": "Death rate (10000) value",
                      },
                      )
-    fig.update_traces(marker=dict(size=6,
+    fig.update_traces(marker=dict(size=7,
                                   line=dict(width=2,
                                             color='DarkSlateGrey')),
                       selector=dict(mode='markers'))
+    return fig
+
+
+#######################
+#   TOTAL PIE CHART   #
+#######################
+def total_doughnut_graph():
+    reverse_pollutants = {
+        'PM10 (SM2005)': 'PM10',
+        'Biossido di Azoto': 'NO2',
+        'Particelle sospese PM2.5': 'PM25',
+        'Monossido di Carbonio': 'CO_8h',
+        'Ozono': 'O3',
+        'Biossido di Zolfo': 'SO2',
+        'Benzene': 'C6H6'
+    }
+
+    tot = pd.DataFrame(columns=['Data', 'NomeTipoSensore', 'Valore'])
+    for y in range(2006, 2019):
+        df = dataframes[y]
+        tot = tot.append(df, ignore_index=True)
+    result = tot.groupby(by=['NomeTipoSensore'])
+    result = result["Valore"].mean().reset_index()
+    for x in pollutants:
+        result.loc[result.NomeTipoSensore == pollutants[x], 'Valore'] = (result['Valore'] / max_pollutant[x]) * 100
+    for x in reverse_pollutants:
+        result.replace(to_replace=x, value=reverse_pollutants[x], inplace=True)
+    fig = go.Figure(data=[go.Pie(labels=result['NomeTipoSensore'], values=result['Valore'], hole=.4)])
     return fig
 
 
@@ -580,7 +610,14 @@ trend_card = dbc.Card([
 desease_card = dbc.Card([
     dcc.Graph(
         id='desease_graph',
-        figure=desease_graph('PM10', ['du cui altre malattie ischemiche del cuore'])
+        figure=desease_graph('PM10', ['du cui altre malattie ischemiche del cuore']),
+        style={'height': '85vh'}
+    )
+])
+total_doughnut_card = dbc.Card([
+    dcc.Graph(
+        id='total_doughnut_graph',
+        figure=total_doughnut_graph()
     )
 ])
 
@@ -682,6 +719,10 @@ general_tab = html.Div([
         [
             dbc.Col(total_map_card, md=6),
             dbc.Col(trend_card, md=6),
+        ], className='mb-4'),
+    dbc.Row(
+        [
+            dbc.Col(total_doughnut_card, md=6),
         ], className='mb-4'),
 ])
 
