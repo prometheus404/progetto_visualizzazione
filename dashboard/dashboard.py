@@ -521,6 +521,46 @@ def desease_graph(pollutant, chosen_deseases=[]):
                       selector=dict(mode='markers'))
     return fig
 
+#################################
+#   CORRELATION COEFFICIENT     #
+#################################
+def update_cc(pollutant, chosen_deseases=[]):
+    tot = pd.DataFrame(columns=['Data', 'NomeTipoSensore', 'Valore'])
+    for y in range(2006, 2019):
+        df = dataframes[y]
+        result = df.groupby(by=['NomeTipoSensore', 'Provincia'])
+        result = result["Valore"].mean().reset_index()
+        result = result.assign(Data=lambda x: y)
+        tot = tot.append(result, ignore_index=True)
+    # LINE CHART DEATHS
+    death = deaths
+    death.drop(death.index[(death["TIPO_DATO15"] == "DEATH")], axis=0, inplace=True)
+    # Inner-join between 'data' from inq_mean and weather
+    csv = pd.merge(tot, death, on=['Data', 'Provincia'])
+    # Prepare scatter
+    result = csv[csv['NomeTipoSensore'] == pollutants[pollutant]]
+    result2 = result[result['Causa iniziale di morte - European Short List'].isin(chosen_deseases)]
+    result2 = result2.groupby(['Provincia', 'Data'])
+    result2 = result2.sum().reset_index()
+    x = result2['Valore']
+    y = result2['Value']
+    pearson, p_pearso = scipy.stats.pearsonr(x, y)
+    spearman, p_spear = scipy.stats.spearmanr(x, y)
+    kendall, p_kendall = scipy.stats.kendalltau(x, y)
+    return html.Div([
+        html.H1('Pearson:'),
+        html.P(f"r = {str(pearson)}"),
+        html.P(f"p_value = {str(p_pearso)}"),
+        html.H1('Spearman:'),
+        html.P(f"r = {str(spearman)}"),
+        html.P(f"p_value = {str(p_spear)}"),
+        html.H1('Kendall:'),
+        html.P(f"r = {str(kendall)}"),
+        html.P(f"p_value = {str(p_kendall)}")
+    ])
+
+
+
 
 #######################
 #   TOTAL PIE CHART   #
@@ -549,16 +589,20 @@ def total_doughnut_graph():
     fig = go.Figure(data=[go.Pie(labels=result['NomeTipoSensore'], values=result['Valore'], hole=.4)])
     return fig
 
-
+#################################
+#   CORRELATION COEFFICIENT     #
+#################################
+#def update_cc(pollutant, chosen_deseases):
+    
 #############
 #   LAYOUT  #
 #############
 days_over_card = dbc.Card([
     html.Div(id='days_over_card', children=update_days('PM10', 2018, 'MI'))
-])
+],style={'text-align' : 'center'})
 description_card = dbc.Card([
     html.P(id='description', children=update_description('PM10'))
-])
+    ],style={'text-align' : 'center'})
 
 sg_card = dbc.Card(
     [
@@ -589,31 +633,40 @@ doughnut_card = dbc.Card([
         figure=doughnut_graph('PM10', 2018, 'MI')
     )
 ])
+
 weather_scatter_card = dbc.Card([
     dcc.Graph(
         style={'height': '85vh'},
         id='weather_graph',
         figure=weather_pollutant(2018, 'PM10', ['Precipitazione']))
 ])
+
 total_map_card = dbc.Card([
     dcc.Graph(
         id='total_map_graph',
         figure=total_map_graph()
     )
 ])
+
 trend_card = dbc.Card([
     dcc.Graph(
+        style={'height': '40vh'},
         id='trend_graph',
         figure=trend_graph()
     )
 ])
+
 desease_card = dbc.Card([
     dcc.Graph(
         id='desease_graph',
         figure=desease_graph('PM10', ['du cui altre malattie ischemiche del cuore']),
-        style={'height': '85vh'}
     )
 ])
+
+correlation_coeff_card = dbc.Card([
+    html.Div(id='correlation_coeff_card', children='PM10')
+    ], style={ 'text-align' : 'center',"font-family":'georgia,garamond,serif','font-size':'16px','font-style':'italic'})
+
 total_doughnut_card = dbc.Card([
     dcc.Graph(
         id='total_doughnut_graph',
@@ -687,15 +740,15 @@ specific_controls = dbc.Row([
     )
 ], className='mb-4')
 
-app.layout = html.Div([
+app.layout = html.Div( [
     dcc.Tabs(id='main-tabs', value='tab-1', children=[
         dcc.Tab(label='General Tab', value='tab-1'),
         dcc.Tab(label='Specific Tab', value='tab-2'),
         dcc.Tab(label='Weather Tab', value='tab-3'),
         dcc.Tab(label='Desease', value='tab-4'),
     ]),
-    html.Div(id='tab-content')
-])
+    html.Div(id='tab-content', style = {'font_size' : '26px'})
+] )
 
 specific_tab = html.Div([
     specific_controls,
@@ -815,6 +868,10 @@ desease_tab = html.Div([
         [
             dbc.Col(trend_card, md=6),
             dbc.Col(desease_card, md=6),
+        ], className='mb-4'),
+    dbc.Row([
+            dbc.Col(trend_card,md=6),
+            dbc.Col(correlation_coeff_card, md=6)
         ], className='mb-4')
 ])
 
@@ -879,12 +936,12 @@ def trend_update(desease):
 
 @app.callback(
     Output('desease_graph', 'figure'),
+    Output('correlation_coeff_card', 'children'),
     Input('desease_pollutant', 'value'),
     Input('desease', 'value')
 )
 def desease_update(pollutant, desease):
-    return desease_graph(pollutant, desease)
-
+    return (desease_graph(pollutant, desease), update_cc(pollutant, desease))
 
 if __name__ == '__main__':
     app.run_server(debug=True)
