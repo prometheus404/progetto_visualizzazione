@@ -41,8 +41,8 @@ Here we displayed an "interactive choropleth map" that permits the user to click
 We took the datasets about the deseases from ISTAT:
 - (https://www.istat.it/).
 
-We took the datasets about the weather conditions and the pollution levels from ARPA Lombardia:
-- (https://www.arpalombardia.it/Pages/ARPA_Home_Page.aspx)
+We took the datasets about the weather conditions and the pollution levels from Open Data Lombardia:
+- (https://www.dati.lombardia.it/)
 ## Project made by
 Carmini Marco - marco.carmini@studenti.unimi.it - @marco-carmini<br>
 Cesana Marco - marco.cesana@studenti.unimi.it - @baltornat<br>
