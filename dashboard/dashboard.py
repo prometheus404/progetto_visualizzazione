@@ -12,10 +12,20 @@ from dash.dependencies import Input, Output
 
 # slate theme (?)
 app = dash.Dash(
-    external_stylesheets=[dbc.themes.SANDSTONE],
+    __name__,
+    external_stylesheets=['../assets/style.css', dbc.themes.SANDSTONE ],
     suppress_callback_exceptions=True
 )
-
+palette = {
+        'red' : 'red',
+        'yellow' : 'yellow',
+        'purple' : 'purple',
+        'green' : 'green',
+        'blue' : 'blue',
+        'black' : 'black',
+        'grey' : 'grey',
+        'white' : 'white',
+        }
 dataframes = {
     2006: pd.read_csv('../csv/lombardia/air_quality/2006.csv', sep=','),
     2007: pd.read_csv('../csv/lombardia/air_quality/2007.csv', sep=','),
@@ -152,9 +162,9 @@ def sg2(pollutant, year, province):
     tot = pd.DataFrame(columns=['Data', 'Valore', 'Provincia'])
     for y in range(2006, 2019):
         if y == year:
-            yearcolor[y] = "red"
+            yearcolor[y] = palette["red"]
         else:
-            yearcolor[y] = "grey"
+            yearcolor[y] = palette["grey"]
         df = dataframes[y]
         pdf = df[df['NomeTipoSensore'] == pollutants[pollutant]]
         pdf['Data'] = pdf['Data'].apply(lambda x: x[5:7])
@@ -203,7 +213,7 @@ def area_graph(pollutant, year, province, mode='mean'):
         yaxis2=dict(anchor='x', domain=[0, 1], overlaying='y', side='left')
     )
     fig.add_trace(go.Box(y=y, yaxis='y', xaxis='x'))
-    fig.add_trace(go.Histogram(x=x, y=negY, marker_color='green',
+    fig.add_trace(go.Histogram(x=x, y=negY, marker_color=palette['green'],
                                yaxis='y2',
                                xaxis='x2',
                                xbins=dict(
@@ -213,7 +223,7 @@ def area_graph(pollutant, year, province, mode='mean'):
                                ),
                                histfunc='sum')
                   )
-    fig.add_trace(go.Histogram(x=x, y=posY, marker_color='red',
+    fig.add_trace(go.Histogram(x=x, y=posY, marker_color=palette['red'],
                                yaxis='y2',
                                xaxis='x2',
                                xbins=dict(
@@ -223,11 +233,11 @@ def area_graph(pollutant, year, province, mode='mean'):
                                ),
                                histfunc='sum')
                   )
-    fig.add_trace(go.Scatter(x=x, y=y, xaxis='x2', yaxis='y', line_color='black', line_width=1))
-    fig.add_trace(go.Scatter(x=x, y=maxY, xaxis='x2', yaxis='y', line_color='black', line_width=3))
-    fig.add_trace(go.Scatter(x=x, y=warY, xaxis='x2', yaxis='y', line_color='purple', line_width=1))
-    fig.add_trace(go.Scatter(x=x, y=maxY, xaxis='x2', yaxis='y2', line_color='purple', line_width=1))
-    fig.add_trace(go.Scatter(x=x, y=cleanY, xaxis='x2', yaxis='y2', line_color='blue', line_width=1))
+    fig.add_trace(go.Scatter(x=x, y=y, xaxis='x2', yaxis='y', line_color=palette['black'], line_width=1))
+    fig.add_trace(go.Scatter(x=x, y=maxY, xaxis='x2', yaxis='y', line_color=palette['black'], line_width=3))
+    fig.add_trace(go.Scatter(x=x, y=warY, xaxis='x2', yaxis='y', line_color=palette['purple'], line_width=1))
+    fig.add_trace(go.Scatter(x=x, y=maxY, xaxis='x2', yaxis='y2', line_color=palette['purple'], line_width=1))
+    fig.add_trace(go.Scatter(x=x, y=cleanY, xaxis='x2', yaxis='y2', line_color=palette['blue'], line_width=1))
     fig.update_layout(
         showlegend=False,
         bargap=0,
@@ -517,7 +527,7 @@ def desease_graph(pollutant, chosen_deseases=[]):
                      )
     fig.update_traces(marker=dict(size=7,
                                   line=dict(width=2,
-                                            color='DarkSlateGrey')),
+                                            color=palette['grey'])),
                       selector=dict(mode='markers'))
     return fig
 
