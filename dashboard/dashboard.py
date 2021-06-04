@@ -179,7 +179,9 @@ def sg2(pollutant, year, province):
                         color='anno',
                         color_discrete_map=yearcolor,
                         line_close=True)
-    fig.update_layout(showlegend=False)
+    fig.update_layout(plot_bgcolor=palette['white'],
+                      showlegend=False,
+                      paper_bgcolor=palette['white'])
     return fig
 
 
@@ -239,7 +241,8 @@ def area_graph(pollutant, year, province, mode='mean'):
     fig.add_trace(go.Scatter(x=x, y=warY, xaxis='x2', yaxis='y', line_color=palette['purple'], line_width=1))
     fig.add_trace(go.Scatter(x=x, y=maxY, xaxis='x2', yaxis='y2', line_color=palette['purple'], line_width=1))
     fig.add_trace(go.Scatter(x=x, y=cleanY, xaxis='x2', yaxis='y2', line_color=palette['blue'], line_width=1))
-    fig.update_layout(
+    fig.update_layout(plot_bgcolor=palette['white'],
+        paper_bgcolor=palette['white'],
         showlegend=False,
         bargap=0,
         yaxis2=dict(
@@ -311,7 +314,7 @@ def map_graph(poll, year, province):
             opacity=1,
         ).data[0]
     )
-    fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    fig.update_layout(plot_bgcolor=palette['white'],paper_bgcolor=palette['white'],margin={"r": 0, "t": 0, "l": 0, "b": 0})
     return fig
 
 
@@ -341,6 +344,7 @@ def weather_pollutant(year, pollutant, weather_attribute=[]):
     fig.update_xaxes(showgrid=False)
     # Set y-axes titles
     fig.update_yaxes(showgrid=False)
+    fig.update_layout(plot_bgcolor=palette['white'],paper_bgcolor=palette['white'])
     return fig
 
 #################
@@ -375,7 +379,7 @@ def doughnut_graph(poll, year, province):
         c += 1
     fig = go.Figure(data=[go.Pie(labels=labels, values=poll_average, hole=.4, pull=pull)])
     # pull argument for exploding
-    fig.update_layout(
+    fig.update_layout(plot_bgcolor=palette['white'],paper_bgcolor=palette['white'],
         annotations=[dict(text=f'{str(year)}', x=0.50, y=0.5, font_size=30, showarrow=False)])
     fig.update_traces(marker={
         'colors': [palette['red'], palette['yellow'], palette['orange'], palette['purple'], palette['green'],
@@ -473,7 +477,7 @@ def total_map_graph():
         opacity=0.5,
         labels={'Valore': 'Global sum 2006/2018'}
     )
-    fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    fig.update_layout(plot_bgcolor=palette['white'],paper_bgcolor=palette['white'],margin={"r": 0, "t": 0, "l": 0, "b": 0})
     return fig
 
 
@@ -517,6 +521,7 @@ def trend_graph(chosen_deseases=[], tab='general'):
     fig.update_xaxes(title_text="Years", showgrid=False)
     # Set y-axes titles
     fig.update_yaxes(title_text="<b>Yearly sum</b> pollution level", secondary_y=False, showgrid=False)
+    fig.update_layout(plot_bgcolor=palette['white'],paper_bgcolor=palette['white'])
     return fig
 
 
@@ -558,6 +563,7 @@ def desease_graph(pollutant, chosen_deseases=[]):
     fig.update_xaxes(showgrid=False)
     # Set y-axes titles
     fig.update_yaxes(showgrid=False)
+    fig.update_layout(plot_bgcolor=palette['white'],paper_bgcolor=palette['white'])
     return fig
 
 
@@ -625,6 +631,7 @@ def total_doughnut_graph():
         result.replace(to_replace=x, value=reverse_pollutants[x], inplace=True)
     fig = go.Figure(data=[go.Pie(labels=result['NomeTipoSensore'], values=result['Valore'], hole=.4)])
     fig.update_traces(marker={'colors': [palette['red'],palette['yellow'],palette['orange'],palette['purple'],palette['green'],palette['blue'],palette['grey']]})
+    fig.update_layout(plot_bgcolor=palette['white'],paper_bgcolor=palette['white'])
     return fig
 
 #############
