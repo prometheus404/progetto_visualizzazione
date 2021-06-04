@@ -400,6 +400,26 @@ descriptions = {
 def update_description(pollutant):
     return descriptions[pollutant]
 
+#################
+#   DANGERS     #
+#################
+descriptions_pollut_desease={
+    'PM10': 'Particulate are the most harmful form of air pollution due to their ability to penetrate deep into the lungs, blood streams and brain causing health problems including hearth attacks, respiratory disease, and premature death. Particulate on the order of 10 micrometers can penetrate the deepest part of the lungs such as the bronchioles or alveoli. When asthmatics are exposed to these conditions it can trigger bronchocnstriction.',
+    'PM25': 'Particulate are the most harmful form of air pollution due to their ability to penetrate deep into the lungs, blood streams and brain causing health problems including hearth attacks, respiratory disease, and premature death. The fine particulate metter (PM2,5) tends to penetrate into the gas exchange regions of the lung, and very small particles may pass through the lungs to affect other organs and lead to cardiovascular problems.',
+    'CO_8h': 'Breathing air with a high concentration of CO reduces the amount of oxygen that can be transported in the blood stream to critical organs like the heart and brain. Very high levels of CO are not likely to occur outdoors. However, when CO levels are elevated outdoors, they can be of particular concern for people with some types of heart disease.',
+    'O3': 'Hundreds of studies suggest that ozone is harmful to people at levels currently found in urban areas. Ozone has been shown to affect the respiratory, cardiovascular and central nervous system. Early death and problems in reproductive health and development are also shown to be associated with ozone exposure.',
+    'C6H6': 'Benzene is a proven carcinogen. Its synergistic action with other pollutants can damage different components of the biosphere. The entry of benzene into the human body takes place via lungs, gastrointestinal tract and through the skin. About half of the benzene inhaled passes through the lungs and enter the bloodstream. Other than cancer risk, there are also some identified non-cancer risks like headache, dizziness, drowsiness, confusion, tremors and loss of consciousness, moderate eye irritation and skin irritation.',
+    'SO2': 'Sulfur dioxide causes a range of harmful effects on the lungs. Continued exposure at high levels increases respiratory symptoms and reduces the ability of the lungs to function. It is shown that continued exposure at high levels of SO2 in the air can make it difficult for people qith asthma to breath when they are active outdoors. Also increases risk of hospital recover for people with asthma.',
+    'NO2': 'Chronic exposure to NO2 can cause respiratory effects including airway inflammation in healthy people and increased respiratory symptoms in people with asthma. NO2 creates ozone which causes eye irritation and exacerbates respiratory conditions, leading to increased visits to emergency departments and hospital admissions for respiratory issues, especially asthma.',
+}
+
+def update_dangers(pollutant):
+    return html.Div([
+        html.H1(pollutant),
+        html.P(f"{descriptions_pollut_desease[pollutant]}")
+        ])
+
+
 
 #################
 #   DAYS OVER   #
@@ -610,6 +630,10 @@ def total_doughnut_graph():
 #############
 #   LAYOUT  #
 #############
+dangers_card = dbc.Card([
+    html.Div(id='dangers_card', children=update_dangers('PM10'))
+    ], style={'border': '2px solid black', 'padding': '15px', 'text-align': 'center'})
+
 days_over_card = dbc.Card([
     html.Div(id='days_over_card', children=update_days('PM10', 2018, 'MI'))
 ], style={'border': '2px solid black', 'padding': '15px', 'text-align': 'center'})
@@ -914,7 +938,7 @@ desease_tab = html.Div([
         ], className='mb-4'),
     dbc.Row(
         [
-            dbc.Col(trend_card, md=6),
+            dbc.Col(dangers_card, md=6),
             dbc.Col(desease_card, md=6),
         ], className='mb-4'),
     dbc.Row([
@@ -985,16 +1009,19 @@ def update(pollutant, year, click):
 )
 def trend_update(desease):
     return trend_graph(desease, tab='desease')
+                       
 
 
 @app.callback(
     Output('desease_graph', 'figure'),
     Output('correlation_coeff_card', 'children'),
+    Output('dangers_card', 'children'),
     Input('desease_pollutant', 'value'),
     Input('desease', 'value')
 )
 def desease_update(pollutant, desease):
-    return (desease_graph(pollutant, desease), update_cc(pollutant, desease))
+    return (desease_graph(pollutant, desease), update_cc(pollutant, desease), update_dangers(pollutant)
+)
 
 
 if __name__ == '__main__':
