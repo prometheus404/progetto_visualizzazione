@@ -177,11 +177,16 @@ def sg2(pollutant, year, province):
                         r='Valore',
                         theta='Data',
                         color='anno',
+                        labels={'anno': 'Year', 'Data': 'Month', 'Valore': 'Value'},
                         color_discrete_map=yearcolor,
                         line_close=True)
     fig.update_layout(plot_bgcolor=palette['white'],
                       showlegend=False,
                       paper_bgcolor=palette['white'])
+    fig.update_layout(title="<b>Pollutant distribution during the year<b>",
+                      title_y=0.97,
+                      title_x=0.53,
+                      title_xanchor='center', title_yanchor='top')
     return fig
 
 
@@ -215,7 +220,7 @@ def area_graph(pollutant, year, province, mode='mean'):
         yaxis=dict(anchor='x2', domain=[0, 1], side='right'),
         yaxis2=dict(anchor='x', domain=[0, 1], overlaying='y', side='left')
     )
-    fig.add_trace(go.Box(y=y, yaxis='y', xaxis='x', marker_color=palette['orange'],))
+    fig.add_trace(go.Box(y=y, yaxis='y', xaxis='x', marker_color=palette['orange'], ))
     fig.add_trace(go.Histogram(x=x, y=negY, marker_color=palette['green'],
                                yaxis='y2',
                                xaxis='x2',
@@ -242,22 +247,26 @@ def area_graph(pollutant, year, province, mode='mean'):
     fig.add_trace(go.Scatter(x=x, y=maxY, xaxis='x2', yaxis='y2', line_color=palette['purple'], line_width=1))
     fig.add_trace(go.Scatter(x=x, y=cleanY, xaxis='x2', yaxis='y2', line_color=palette['blue'], line_width=1))
     fig.update_layout(plot_bgcolor=palette['white'],
-        paper_bgcolor=palette['white'],
-        showlegend=False,
-        bargap=0,
-        yaxis2=dict(
-            title='micrograms over limit',
-            showline=True
-        ),
-        yaxis=dict(
-            title='micrograms/metric cube',
-            showline=True
-        )
-    )
+                      paper_bgcolor=palette['white'],
+                      showlegend=False,
+                      bargap=0,
+                      yaxis2=dict(
+                          title='micrograms over limit',
+                          showline=True
+                      ),
+                      yaxis=dict(
+                          title='micrograms/metric cube',
+                          showline=True
+                      )
+                      )
     # Set x-axis title
     fig.update_xaxes(showgrid=False)
     # Set y-axes titles
     fig.update_yaxes(showgrid=False)
+    fig.update_layout(title=f"<b>Daily pollution trend<b>",
+                      title_y=0.97,
+                      title_x=0.35,
+                      title_xanchor='center', title_yanchor='top')
     return fig
 
 
@@ -298,10 +307,10 @@ def map_graph(poll, year, province):
         color_continuous_scale="YlOrRd",
         range_color=(pollutant_range[0], pollutant_range[1]),
         mapbox_style="carto-positron",
-        zoom=7,
+        zoom=6.5,
         center={"lat": 45.67, "lon": 9.7119},
         opacity=0.5,
-        labels={'Valore': poll + ' in ' + str(year)}
+        labels={'Valore': poll + ' in ' + str(year), 'Provincia': 'Province'}
     )
     highlights = highlight(province)
     fig.add_trace(
@@ -312,9 +321,15 @@ def map_graph(poll, year, province):
             locations="Provincia",
             featureidkey="properties.prov_acr",
             opacity=1,
+            labels={'Valore': poll + ' in ' + str(year), 'Provincia': 'Province'}
         ).data[0]
     )
-    fig.update_layout(plot_bgcolor=palette['white'],paper_bgcolor=palette['white'],margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    fig.update_layout(plot_bgcolor=palette['white'], paper_bgcolor=palette['white'],
+                      margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0}, title=f"<b>{poll} level in {str(year)}<b>",
+                      title_y=0.97,
+                      title_x=0.35,
+                      title_xanchor='center', title_yanchor='top')
     return fig
 
 
@@ -344,8 +359,9 @@ def weather_pollutant(year, pollutant, weather_attribute=[]):
     fig.update_xaxes(showgrid=False)
     # Set y-axes titles
     fig.update_yaxes(showgrid=False)
-    fig.update_layout(plot_bgcolor=palette['white'],paper_bgcolor=palette['white'])
+    fig.update_layout(plot_bgcolor=palette['white'], paper_bgcolor=palette['white'])
     return fig
+
 
 #################
 #   PIE CHART   #
@@ -379,11 +395,15 @@ def doughnut_graph(poll, year, province):
         c += 1
     fig = go.Figure(data=[go.Pie(labels=labels, values=poll_average, hole=.4, pull=pull)])
     # pull argument for exploding
-    fig.update_layout(plot_bgcolor=palette['white'],paper_bgcolor=palette['white'],
-        annotations=[dict(text=f'{str(year)}', x=0.50, y=0.5, font_size=30, showarrow=False)])
+    fig.update_layout(plot_bgcolor=palette['white'], paper_bgcolor=palette['white'],
+                      annotations=[dict(text=f'{str(year)}', x=0.50, y=0.5, font_size=30, showarrow=False)])
     fig.update_traces(marker={
         'colors': [palette['red'], palette['yellow'], palette['orange'], palette['purple'], palette['green'],
                    palette['blue'], palette['grey']]})
+    fig.update_layout(title="<b>Pollutants concentration by province<b>",
+                      title_y=0.97,
+                      title_x=0.4,
+                      title_xanchor='center', title_yanchor='top')
     return fig
 
 
@@ -404,11 +424,12 @@ descriptions = {
 def update_description(pollutant):
     return descriptions[pollutant]
 
+
 #################
 #   DANGERS     #
 #################
-descriptions_pollut_desease={
-    'PM10': 'Particulate are the most harmful form of air pollution due to their ability to penetrate deep into the lungs, blood streams and brain causing health problems including hearth attacks, respiratory disease, and premature death. Particulate on the order of 10 micrometers can penetrate the deepest part of the lungs such as the bronchioles or alveoli. When asthmatics are exposed to these conditions it can trigger bronchocnstriction.',
+descriptions_pollut_desease = {
+    'PM10': 'Particulate are the most harmful form of air pollution due to their ability to penetrate deep into the lungs, blood streams and brain causing health problems including hearth attacks, respiratory disease, and premature death. Particulate on the order of 10 micrometers can penetrate the deepest part of the lungs such as the bronchioles or alveoli. When asthmatics are exposed to these conditions it can trigger bronchoconstriction.',
     'PM25': 'Particulate are the most harmful form of air pollution due to their ability to penetrate deep into the lungs, blood streams and brain causing health problems including hearth attacks, respiratory disease, and premature death. The fine particulate metter (PM2,5) tends to penetrate into the gas exchange regions of the lung, and very small particles may pass through the lungs to affect other organs and lead to cardiovascular problems.',
     'CO_8h': 'Breathing air with a high concentration of CO reduces the amount of oxygen that can be transported in the blood stream to critical organs like the heart and brain. Very high levels of CO are not likely to occur outdoors. However, when CO levels are elevated outdoors, they can be of particular concern for people with some types of heart disease.',
     'O3': 'Hundreds of studies suggest that ozone is harmful to people at levels currently found in urban areas. Ozone has been shown to affect the respiratory, cardiovascular and central nervous system. Early death and problems in reproductive health and development are also shown to be associated with ozone exposure.',
@@ -417,12 +438,12 @@ descriptions_pollut_desease={
     'NO2': 'Chronic exposure to NO2 can cause respiratory effects including airway inflammation in healthy people and increased respiratory symptoms in people with asthma. NO2 creates ozone which causes eye irritation and exacerbates respiratory conditions, leading to increased visits to emergency departments and hospital admissions for respiratory issues, especially asthma.',
 }
 
+
 def update_dangers(pollutant):
     return html.Div([
         html.H1(pollutant),
         html.P(f"{descriptions_pollut_desease[pollutant]}")
-        ])
-
+    ])
 
 
 #################
@@ -472,12 +493,17 @@ def total_map_graph():
         color_continuous_scale="YlOrRd",
         range_color=(2500, 4500),
         mapbox_style="carto-positron",
-        zoom=7,
+        zoom=6.5,
         center={"lat": 45.67, "lon": 9.7119},
         opacity=0.5,
-        labels={'Valore': 'Global sum 2006/2018'}
+        labels={'Valore': 'Normalized Pollutant Sum', 'Provincia': 'Province'}
     )
-    fig.update_layout(plot_bgcolor=palette['white'],paper_bgcolor=palette['white'],margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    fig.update_layout(plot_bgcolor=palette['white'], paper_bgcolor=palette['white'],
+                      margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0}, title="<b>Pollutant sum trend<b>",
+                      title_y=0.97,
+                      title_x=0.35,
+                      title_xanchor='center', title_yanchor='top')
     return fig
 
 
@@ -521,7 +547,11 @@ def trend_graph(chosen_deseases=[], tab='general'):
     fig.update_xaxes(title_text="Years", showgrid=False)
     # Set y-axes titles
     fig.update_yaxes(title_text="<b>Yearly sum</b> pollution level", secondary_y=False, showgrid=False)
-    fig.update_layout(plot_bgcolor=palette['white'],paper_bgcolor=palette['white'])
+    fig.update_layout(plot_bgcolor=palette['white'], paper_bgcolor=palette['white'])
+    fig.update_layout(title="<b>Pollutant trend during the years<b>",
+                      title_y=0.97,
+                      title_x=0.4,
+                      title_xanchor='center', title_yanchor='top')
     return fig
 
 
@@ -551,9 +581,11 @@ def desease_graph(pollutant, chosen_deseases=[]):
     fig = px.scatter(result2, x='Valore', y='Value', color='Data',
                      labels={
                          "Valore": pollutant + " value",
-                         "Value": "Death rate (10000) value",
+                         "Value": "Deaths every 10000 people",
+                         'Data': 'Year'
                      },
-                     color_discrete_sequence=[palette['red'], palette['yellow'], palette['orange'], palette['purple'], palette['green'], palette['blue'], palette['grey']]
+                     color_discrete_sequence=[palette['red'], palette['yellow'], palette['orange'], palette['purple'],
+                                              palette['green'], palette['blue'], palette['grey']]
                      )
     fig.update_traces(marker=dict(size=10,
                                   line=dict(width=2,
@@ -563,7 +595,11 @@ def desease_graph(pollutant, chosen_deseases=[]):
     fig.update_xaxes(showgrid=False)
     # Set y-axes titles
     fig.update_yaxes(showgrid=False)
-    fig.update_layout(plot_bgcolor=palette['white'],paper_bgcolor=palette['white'])
+    fig.update_layout(plot_bgcolor=palette['white'], paper_bgcolor=palette['white'])
+    fig.update_layout(title=f"<b>Correlation between death rate and {pollutant}<b>",
+                      title_y=0.97,
+                      title_x=0.35,
+                      title_xanchor='center', title_yanchor='top')
     return fig
 
 
@@ -630,24 +666,31 @@ def total_doughnut_graph():
     for x in reverse_pollutants:
         result.replace(to_replace=x, value=reverse_pollutants[x], inplace=True)
     fig = go.Figure(data=[go.Pie(labels=result['NomeTipoSensore'], values=result['Valore'], hole=.4)])
-    fig.update_traces(marker={'colors': [palette['red'],palette['yellow'],palette['orange'],palette['purple'],palette['green'],palette['blue'],palette['grey']]})
-    fig.update_layout(plot_bgcolor=palette['white'],paper_bgcolor=palette['white'])
+    fig.update_traces(marker={
+        'colors': [palette['red'], palette['yellow'], palette['orange'], palette['purple'], palette['green'],
+                   palette['blue'], palette['grey']]})
+    fig.update_layout(plot_bgcolor=palette['white'], paper_bgcolor=palette['white'])
+    fig.update_layout(title="<b>Pollutants concentration<b>",
+                      title_y=0.97,
+                      title_x=0.4,
+                      title_xanchor='center', title_yanchor='top')
     return fig
+
 
 #############
 #   LAYOUT  #
 #############
 dangers_card = dbc.Card([
     html.Div(id='dangers_card', children=update_dangers('PM10'))
-    ], style={'border': '2px solid black', 'padding': '15px', 'text-align': 'center'})
+], style={'border': '2px solid black', 'padding': '15px', 'text-align': 'center', 'background-color': palette['white']})
 
 days_over_card = dbc.Card([
     html.Div(id='days_over_card', children=update_days('PM10', 2018, 'MI'))
-], style={'border': '2px solid black', 'padding': '15px', 'text-align': 'center'})
+], style={'border': '2px solid black', 'padding': '15px', 'text-align': 'center', 'background-color': palette['white']})
 
 description_card = dbc.Card([
     html.P(id='description', children=update_description('PM10'))
-], style={'border': '2px solid black', 'padding': '15px', 'text-align': 'center'})
+], style={'border': '2px solid black', 'padding': '15px', 'text-align': 'center', 'background-color': palette['white']})
 
 sg_card = dbc.Card(
     [
@@ -655,7 +698,7 @@ sg_card = dbc.Card(
             id='spider_graph',
             figure=sg2('PM10', 2018, 'MI')
         )
-    ], style={'border': '2px solid black', 'padding': '15px'})
+    ], style={'border': '2px solid black', 'padding': '15px', 'background-color': palette['white']})
 
 area_card = dbc.Card(
     [
@@ -663,60 +706,61 @@ area_card = dbc.Card(
             id='area_graph',
             figure=area_graph('PM10', 2018, 'MI')
         )
-    ], style={'border': '2px solid black', 'padding': '15px'})
+    ], style={'border': '2px solid black', 'padding': '15px', 'background-color': palette['white']})
 
 map_card = dbc.Card([
     dcc.Graph(
         id='map_graph',
         figure=map_graph('PM10', 2018, 'MI')
     )
-], style={'border': '2px solid black', 'padding': '15px'})
+], style={'border': '2px solid black', 'padding': '15px', 'background-color': palette['white']})
 
 doughnut_card = dbc.Card([
     dcc.Graph(
         id='doughnut_graph',
         figure=doughnut_graph('PM10', 2018, 'MI')
     )
-], style={'border': '2px solid black', 'padding': '15px'})
+], style={'border': '2px solid black', 'padding': '15px', 'background-color': palette['white']})
 
 weather_scatter_card = dbc.Card([
     dcc.Graph(
         style={'height': '85vh'},
         id='weather_graph',
         figure=weather_pollutant(2018, 'PM10', ['Precipitazione']))
-], style={'border': '2px solid black', 'padding': '15px'})
+], style={'border': '2px solid black', 'padding': '15px', 'background-color': palette['white']})
 
 total_map_card = dbc.Card([
     dcc.Graph(
         id='total_map_graph',
         figure=total_map_graph()
     )
-], style={'border': '2px solid black', 'padding': '15px'})
+], style={'border': '2px solid black', 'padding': '15px', 'background-color': palette['white']})
 
 trend_card = dbc.Card([
     dcc.Graph(
         id='trend_graph',
         figure=trend_graph()
     )
-], style={'border': '2px solid black', 'padding': '15px'})
+], style={'border': '2px solid black', 'padding': '15px', 'background-color': palette['white']})
 
 desease_card = dbc.Card([
     dcc.Graph(
         id='desease_graph',
         figure=desease_graph('PM10', ['du cui altre malattie ischemiche del cuore']),
     )
-], style={'border': '2px solid black', 'padding': '15px'})
+], style={'border': '2px solid black', 'padding': '15px', 'background-color': palette['white']})
 
 correlation_coeff_card = dbc.Card([
     html.Div(id='correlation_coeff_card', children='PM10')
-], style={'border': '2px solid black', 'padding': '15px', 'height': '100%', 'text-align': 'center'})
+], style={'border': '2px solid black', 'padding': '15px', 'height': '100%', 'text-align': 'center',
+          'background-color': palette['white']})
 
 total_doughnut_card = dbc.Card([
     dcc.Graph(
         id='total_doughnut_graph',
         figure=total_doughnut_graph()
     )
-], style={'border': '2px solid black', 'padding': '15px'})
+], style={'border': '2px solid black', 'padding': '15px', 'background-color': palette['white']})
 
 weather_controls = dbc.Row([
     dbc.Col(
@@ -780,7 +824,7 @@ specific_controls = dbc.Row([
             marks={i: str(i) for i in range(2006, 2019)},
             value=2018,
         ),
-        md=8
+        md=8,
     )
 ], className='mb-4')
 
@@ -1016,7 +1060,6 @@ def update(pollutant, year, click):
 )
 def trend_update(desease):
     return trend_graph(desease, tab='desease')
-                       
 
 
 @app.callback(
@@ -1028,7 +1071,7 @@ def trend_update(desease):
 )
 def desease_update(pollutant, desease):
     return (desease_graph(pollutant, desease), update_cc(pollutant, desease), update_dangers(pollutant)
-)
+            )
 
 
 if __name__ == '__main__':
