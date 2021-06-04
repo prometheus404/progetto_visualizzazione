@@ -762,6 +762,15 @@ total_doughnut_card = dbc.Card([
     )
 ], style={'border': '2px solid black', 'padding': '15px', 'background-color': palette['white']})
 
+presentation_card = dbc.Card([
+    html.H1('Air quality analysis'),
+    html.P('Overview: Regional air analysis from 2006 to 2018'),
+    html.P('Provincial: Yearly air analysis by province'),
+    html.P('Weather correlation: Correlation between air pollution and weather conditions'),
+    html.P('Desease correlation: Correlation between air pollution and deseases'),
+    html.A(href='https://github.com/prometheus404/sci-vis-project', children='GitHub')
+], style={'border': '2px solid black', 'padding': '15px', 'background-color': palette['white'], 'text-align': 'center', 'height': '100%', 'font-size': '20px'})
+
 weather_controls = dbc.Row([
     dbc.Col(
         dcc.Dropdown(
@@ -883,12 +892,13 @@ specific_tab = html.Div([
 general_tab = html.Div([
     dbc.Row(
         [
-            dbc.Col(total_map_card, md=6),
-            dbc.Col(trend_card, md=6),
+            dbc.Col(presentation_card, md=6),
+            dbc.Col(total_map_card, md=6)
         ], className='mb-4'),
     dbc.Row(
         [
             dbc.Col(total_doughnut_card, md=6),
+            dbc.Col(trend_card, md=6)
         ], className='mb-4'),
 ], style={'background-color': palette['white'],
           'width': 'auto',
