@@ -13,19 +13,20 @@ from dash.dependencies import Input, Output
 # slate theme (?)
 app = dash.Dash(
     __name__,
-    external_stylesheets=['../assets/style.css', dbc.themes.SANDSTONE ],
+    external_stylesheets=['./assets/style.css', dbc.themes.SANDSTONE],
     suppress_callback_exceptions=True
 )
 palette = {
-        'red' : 'red',
-        'yellow' : 'yellow',
-        'purple' : 'purple',
-        'green' : 'green',
-        'blue' : 'blue',
-        'black' : 'black',
-        'grey' : 'grey',
-        'white' : 'white',
-        }
+    'red': '#C90F02',
+    'yellow': '#EE9B00',
+    'orange': '#CA6702',
+    'purple': '#6E2252',
+    'green': '#94D2BD',
+    'blue': '#005F73',
+    'black': '#001219',
+    'grey': '#C7BEC7',
+    'white': '#F6F1E1',
+}
 dataframes = {
     2006: pd.read_csv('../csv/lombardia/air_quality/2006.csv', sep=','),
     2007: pd.read_csv('../csv/lombardia/air_quality/2007.csv', sep=','),
@@ -212,7 +213,7 @@ def area_graph(pollutant, year, province, mode='mean'):
         yaxis=dict(anchor='x2', domain=[0, 1], side='right'),
         yaxis2=dict(anchor='x', domain=[0, 1], overlaying='y', side='left')
     )
-    fig.add_trace(go.Box(y=y, yaxis='y', xaxis='x'))
+    fig.add_trace(go.Box(y=y, yaxis='y', xaxis='x', marker_color=palette['orange'],))
     fig.add_trace(go.Histogram(x=x, y=negY, marker_color=palette['green'],
                                yaxis='y2',
                                xaxis='x2',
@@ -250,6 +251,10 @@ def area_graph(pollutant, year, province, mode='mean'):
             showline=True
         )
     )
+    # Set x-axis title
+    fig.update_xaxes(showgrid=False)
+    # Set y-axes titles
+    fig.update_yaxes(showgrid=False)
     return fig
 
 
@@ -326,22 +331,17 @@ def weather_pollutant(year, pollutant, weather_attribute=[]):
                          "Valore meteo": "Weather attribute value",
                          "Valore inquinante": "Pollutant value",
                      },
+                     color_discrete_sequence=[palette['green']]
                      )
-    fig.update_traces(marker=dict(size=12,
+    fig.update_traces(marker=dict(size=14,
                                   line=dict(width=2,
-                                            color='DarkSlateGrey')),
+                                            color=palette['black'])),
                       selector=dict(mode='markers'))
-
+    # Set x-axis title
+    fig.update_xaxes(showgrid=False)
+    # Set y-axes titles
+    fig.update_yaxes(showgrid=False)
     return fig
-    # weather = np.array(csv['Valore meteo'])
-    # pollutant = np.array(csv['Valore inquinante'])
-    # Pearson
-    # print(scipy.stats.pearsonr(weather, pollutant))
-    # Spearman
-    # print(scipy.stats.spearmanr(weather, pollutant))
-    # Kendall
-    # print(scipy.stats.kendalltau(weather, pollutant))
-
 
 #################
 #   PIE CHART   #
@@ -365,7 +365,7 @@ def doughnut_graph(poll, year, province):
         counter += 1
     # Donut chart
     labels = ['C6H6', 'NO2', 'SO2', 'CO_8h',
-              'O3', 'PM 10', 'PM 2.5']
+              'O3', 'PM10', 'PM25']
     ordered_poll = ['C6H6', 'NO2', 'SO2', 'CO_8h', 'O3', 'PM10', 'PM25']
     pull = [0, 0, 0, 0, 0, 0, 0]
     c = 0
@@ -377,6 +377,9 @@ def doughnut_graph(poll, year, province):
     # pull argument for exploding
     fig.update_layout(
         annotations=[dict(text=f'{str(year)}', x=0.50, y=0.5, font_size=30, showarrow=False)])
+    fig.update_traces(marker={
+        'colors': [palette['red'], palette['yellow'], palette['orange'], palette['purple'], palette['green'],
+                   palette['blue'], palette['grey']]})
     return fig
 
 
@@ -481,19 +484,19 @@ def trend_graph(chosen_deseases=[], tab='general'):
             df.loc[df.Data == x, 'Value'] = (df['Value'] / population[x]) * 10000
         # Draw desease lines
         fig.add_trace(
-            go.Scatter(x=df['Data'], y=df['Value'], name="Desease trend"),
+            go.Scatter(x=df['Data'], y=df['Value'], name="Desease trend", marker_color=palette['red']),
             secondary_y=True,
         )
-        fig.update_yaxes(title_text="<b>Yearly sum</b> deaths every 10000 people", secondary_y=True)
+        fig.update_yaxes(title_text="<b>Yearly sum</b> deaths every 10000 people", secondary_y=True, showgrid=False)
     # Add traces
     fig.add_trace(
-        go.Scatter(x=pollution['Data'], y=pollution['Valore'], name="Pollution trend"),
+        go.Scatter(x=pollution['Data'], y=pollution['Valore'], name="Pollution trend", marker_color=palette['blue']),
         secondary_y=False,
     )
     # Set x-axis title
-    fig.update_xaxes(title_text="Years")
+    fig.update_xaxes(title_text="Years", showgrid=False)
     # Set y-axes titles
-    fig.update_yaxes(title_text="<b>Yearly sum</b> pollution level", secondary_y=False)
+    fig.update_yaxes(title_text="<b>Yearly sum</b> pollution level", secondary_y=False, showgrid=False)
     return fig
 
 
@@ -518,18 +521,25 @@ def desease_graph(pollutant, chosen_deseases=[]):
     result2 = result[result['Causa iniziale di morte - European Short List'].isin(chosen_deseases)]
     result2 = result2.groupby(['Provincia', 'Data'])
     result2 = result2.sum().reset_index()
+    result2["Data"] = result2["Data"].astype(str)
     # Plot
     fig = px.scatter(result2, x='Valore', y='Value', color='Data',
                      labels={
                          "Valore": pollutant + " value",
                          "Value": "Death rate (10000) value",
                      },
+                     color_discrete_sequence=[palette['red'], palette['yellow'], palette['orange'], palette['purple'], palette['green'], palette['blue'], palette['grey']]
                      )
-    fig.update_traces(marker=dict(size=7,
+    fig.update_traces(marker=dict(size=10,
                                   line=dict(width=2,
-                                            color=palette['grey'])),
+                                            color=palette['black'])),
                       selector=dict(mode='markers'))
+    # Set x-axis title
+    fig.update_xaxes(showgrid=False)
+    # Set y-axes titles
+    fig.update_yaxes(showgrid=False)
     return fig
+
 
 #################################
 #   CORRELATION COEFFICIENT     #
@@ -570,8 +580,6 @@ def update_cc(pollutant, chosen_deseases=[]):
     ])
 
 
-
-
 #######################
 #   TOTAL PIE CHART   #
 #######################
@@ -585,7 +593,6 @@ def total_doughnut_graph():
         'Biossido di Zolfo': 'SO2',
         'Benzene': 'C6H6'
     }
-
     tot = pd.DataFrame(columns=['Data', 'NomeTipoSensore', 'Valore'])
     for y in range(2006, 2019):
         df = dataframes[y]
@@ -597,23 +604,19 @@ def total_doughnut_graph():
     for x in reverse_pollutants:
         result.replace(to_replace=x, value=reverse_pollutants[x], inplace=True)
     fig = go.Figure(data=[go.Pie(labels=result['NomeTipoSensore'], values=result['Valore'], hole=.4)])
+    fig.update_traces(marker={'colors': [palette['red'],palette['yellow'],palette['orange'],palette['purple'],palette['green'],palette['blue'],palette['grey']]})
     return fig
-
-#################################
-#   CORRELATION COEFFICIENT     #
-#################################
-#def update_cc(pollutant, chosen_deseases):
 
 #############
 #   LAYOUT  #
 #############
 days_over_card = dbc.Card([
     html.Div(id='days_over_card', children=update_days('PM10', 2018, 'MI'))
-],style={'border': '2px solid black', 'padding': '15px', 'text-align' : 'center'})
+], style={'border': '2px solid black', 'padding': '15px', 'text-align': 'center'})
 
 description_card = dbc.Card([
     html.P(id='description', children=update_description('PM10'))
-    ],style={'border': '2px solid black', 'padding': '15px', 'text-align' : 'center'})
+], style={'border': '2px solid black', 'padding': '15px', 'text-align': 'center'})
 
 sg_card = dbc.Card(
     [
@@ -621,7 +624,7 @@ sg_card = dbc.Card(
             id='spider_graph',
             figure=sg2('PM10', 2018, 'MI')
         )
-    ], style={'border': '2px solid black'})
+    ], style={'border': '2px solid black', 'padding': '15px'})
 
 area_card = dbc.Card(
     [
@@ -636,7 +639,7 @@ map_card = dbc.Card([
         id='map_graph',
         figure=map_graph('PM10', 2018, 'MI')
     )
-], style={'border': '2px solid black', 'padding': '10px'})
+], style={'border': '2px solid black', 'padding': '15px'})
 
 doughnut_card = dbc.Card([
     dcc.Graph(
@@ -657,14 +660,14 @@ total_map_card = dbc.Card([
         id='total_map_graph',
         figure=total_map_graph()
     )
-], style={'border': '2px solid black', 'padding': '10px'})
+], style={'border': '2px solid black', 'padding': '15px'})
 
 trend_card = dbc.Card([
     dcc.Graph(
         id='trend_graph',
         figure=trend_graph()
     )
-], style={'border': '2px solid black'})
+], style={'border': '2px solid black', 'padding': '15px'})
 
 desease_card = dbc.Card([
     dcc.Graph(
@@ -675,7 +678,7 @@ desease_card = dbc.Card([
 
 correlation_coeff_card = dbc.Card([
     html.Div(id='correlation_coeff_card', children='PM10')
-    ], style={'border': '2px solid black', 'padding': '15px', 'height': '450px', 'text-align': 'center'})
+], style={'border': '2px solid black', 'padding': '15px', 'height': '100%', 'text-align': 'center'})
 
 total_doughnut_card = dbc.Card([
     dcc.Graph(
@@ -750,15 +753,35 @@ specific_controls = dbc.Row([
     )
 ], className='mb-4')
 
-app.layout = html.Div( [
+app.layout = html.Div([
     dcc.Tabs(id='main-tabs', value='tab-1', children=[
-        dcc.Tab(label='General Tab', value='tab-1'),
-        dcc.Tab(label='Specific Tab', value='tab-2'),
-        dcc.Tab(label='Weather Tab', value='tab-3'),
-        dcc.Tab(label='Desease', value='tab-4'),
+        dcc.Tab(label='Overview', value='tab-1',
+                style={'background-color': palette['yellow'], 'border-bottom': '2px solid black',
+                       'border-top': '2px solid black', 'border-right': '1px solid black',
+                       'border-left': '2px solid black'},
+                selected_style={'background-color': palette['white'], 'border-top': '2px solid black',
+                                'border-right': '1px solid black', 'border-left': '2px solid black'}),
+        dcc.Tab(label='Provincial', value='tab-2',
+                style={'background-color': palette['yellow'], 'border-bottom': '2px solid black',
+                       'border-top': '2px solid black', 'border-right': '1px solid black',
+                       'border-left': '1px solid black'},
+                selected_style={'background-color': palette['white'], 'border-top': '2px solid black',
+                                'border-right': '1px solid black', 'border-left': '1px solid black'}),
+        dcc.Tab(label='Weather correlation', value='tab-3',
+                style={'background-color': palette['yellow'], 'border-bottom': '2px solid black',
+                       'border-top': '2px solid black', 'border-right': '1px solid black',
+                       'border-left': '1px solid black'},
+                selected_style={'background-color': palette['white'], 'border-top': '2px solid black',
+                                'border-right': '1px solid black', 'border-left': '1px solid black'}),
+        dcc.Tab(label='Deseases correlation', value='tab-4',
+                style={'background-color': palette['yellow'], 'border-bottom': '2px solid black',
+                       'border-top': '2px solid black', 'border-right': '2px solid black',
+                       'border-left': '1px solid black'},
+                selected_style={'background-color': palette['white'], 'border-top': '2px solid black',
+                                'border-right': '2px solid black', 'border-left': '1px solid black'}),
     ]),
-    html.Div(id='tab-content', style = {'font_size' : '26px'})
-] )
+    html.Div(id='tab-content', style={'font_size': '26px'})
+])
 
 specific_tab = html.Div([
     specific_controls,
@@ -775,10 +798,12 @@ specific_tab = html.Div([
         dbc.Col(doughnut_card, md=4),
         dbc.Col(area_card, md=6)
     ])
-], style = { 'background-color': 'lightgrey',
-  'width': 'auto',
-  'border': '15px solid orange',
-  'padding': '25px'})
+], style={'background-color': palette['white'],
+          'width': 'auto',
+          'border-left': '2px solid black',
+          'border-right': '2px solid black',
+          'border-bottom': '2px solid black',
+          'padding': '25px'})
 
 general_tab = html.Div([
     dbc.Row(
@@ -790,18 +815,22 @@ general_tab = html.Div([
         [
             dbc.Col(total_doughnut_card, md=6),
         ], className='mb-4'),
-],style = { 'background-color': 'lightgrey',
-  'width': 'auto',
-  'border': '15px solid orange',
-  'padding': '25px'})
+], style={'background-color': palette['white'],
+          'width': 'auto',
+          'border-left': '2px solid black',
+          'border-right': '2px solid black',
+          'border-bottom': '2px solid black',
+          'padding': '25px'})
 
 weather_tab = html.Div([
     weather_controls,
     weather_scatter_card
-], style = { 'background-color': 'lightgrey',
-  'width': 'auto',
-  'border': '15px solid orange',
-  'padding': '25px'})
+], style={'background-color': palette['white'],
+          'width': 'auto',
+          'border-left': '2px solid black',
+          'border-right': '2px solid black',
+          'border-bottom': '2px solid black',
+          'padding': '25px'})
 
 desease_tab = html.Div([
     dbc.Row(
@@ -889,13 +918,15 @@ desease_tab = html.Div([
             dbc.Col(desease_card, md=6),
         ], className='mb-4'),
     dbc.Row([
-            dbc.Col(trend_card,md=6),
-            dbc.Col(correlation_coeff_card, md=6)
-        ], className='mb-4')
-], style = { 'background-color': 'lightgrey',
-  'width': 'auto',
-  'border': '15px solid orange',
-  'padding': '25px'})
+        dbc.Col(trend_card, md=6),
+        dbc.Col(correlation_coeff_card, md=6)
+    ], className='mb-4')
+], style={'background-color': palette['white'],
+          'width': 'auto',
+          'border-left': '2px solid black',
+          'border-right': '2px solid black',
+          'border-bottom': '2px solid black',
+          'padding': '25px'})
 
 
 #################
@@ -964,6 +995,7 @@ def trend_update(desease):
 )
 def desease_update(pollutant, desease):
     return (desease_graph(pollutant, desease), update_cc(pollutant, desease))
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
