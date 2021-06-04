@@ -663,7 +663,7 @@ area_card = dbc.Card(
             id='area_graph',
             figure=area_graph('PM10', 2018, 'MI')
         )
-    ], style={'border': '2px solid black'})
+    ], style={'border': '2px solid black', 'padding': '15px'})
 
 map_card = dbc.Card([
     dcc.Graph(
@@ -677,14 +677,14 @@ doughnut_card = dbc.Card([
         id='doughnut_graph',
         figure=doughnut_graph('PM10', 2018, 'MI')
     )
-], style={'border': '2px solid black'})
+], style={'border': '2px solid black', 'padding': '15px'})
 
 weather_scatter_card = dbc.Card([
     dcc.Graph(
         style={'height': '85vh'},
         id='weather_graph',
         figure=weather_pollutant(2018, 'PM10', ['Precipitazione']))
-], style={'border': '2px solid black'})
+], style={'border': '2px solid black', 'padding': '15px'})
 
 total_map_card = dbc.Card([
     dcc.Graph(
@@ -705,7 +705,7 @@ desease_card = dbc.Card([
         id='desease_graph',
         figure=desease_graph('PM10', ['du cui altre malattie ischemiche del cuore']),
     )
-], style={'border': '2px solid black'})
+], style={'border': '2px solid black', 'padding': '15px'})
 
 correlation_coeff_card = dbc.Card([
     html.Div(id='correlation_coeff_card', children='PM10')
@@ -716,7 +716,7 @@ total_doughnut_card = dbc.Card([
         id='total_doughnut_graph',
         figure=total_doughnut_graph()
     )
-], style={'border': '2px solid black'})
+], style={'border': '2px solid black', 'padding': '15px'})
 
 weather_controls = dbc.Row([
     dbc.Col(
